@@ -65,12 +65,11 @@ const titlecard = el(`
     <div class="d">DAY ${day}</div><div class="t">${esc(meta.title)}</div><div class="s">${esc(meta.subtitle)}</div>
   </div></div>`);
 const overlay = el(`
-  <div class="overlay"><div class="box">
+  <div class="overlay hide ended" aria-hidden="true"><div class="box">
     <div class="eyebrow">● ALL.Net status: unreachable</div>
     <h1>Day <span>${day}</span>:<br>${esc(meta.title)}</h1>
     <p>${esc(meta.subtitle)}</p>
-    <button class="start" autofocus>▶ ENTER THE ARCADE</button>
-    <div class="autoplay-note">Starting automatically…</div>
+    <button class="start" aria-label="Replay scene">↻ REPLAY</button>
     <div class="fine">Sound on for maximum despair. Fan-made parody; not affiliated with SEGA.</div>
   </div></div>`);
 
@@ -108,7 +107,8 @@ const showTitle = () => {
   setTimeout(() => titlecard.classList.remove("show"), 3600);
 };
 
-// ---- Playback: autoplay after a short delay, play once, then show the start screen with "Replay" ----
+// ---- Playback: autoplay after a short delay (no blocking start screen), play once,
+// then show the title screen with "Replay" ----
 const AUTOPLAY_DELAY_MS = 2000;
 const startBtn = overlay.querySelector<HTMLButtonElement>(".start")!;
 const soundHint = el(`<button class="sound-hint" hidden>🔈 Click anywhere for sound</button>`);
@@ -125,7 +125,7 @@ function unlockAudio() {
 for (const ev of ["pointerdown", "keydown", "touchstart"] as const)
   addEventListener(ev, () => unlockAudio(), { once: true, capture: true });
 
-function play(withGesture: boolean) {
+function play(withGesture: boolean, title = true) {
   if (!loaded) {
     pendingStart = true;
     return;
@@ -134,9 +134,10 @@ function play(withGesture: boolean) {
   if (withGesture) unlockAudio();
   else if (!stage.sfx.ready) soundHint.hidden = false;
   overlay.classList.add("hide");
+  overlay.setAttribute("aria-hidden", "true");
   stage.restart();
   stage.play();
-  showTitle();
+  if (title) showTitle();
 }
 
 function showEndScreen() {
@@ -144,10 +145,8 @@ function showEndScreen() {
   titlecard.classList.remove("show");
   captionEl.classList.remove("show");
   soundHint.hidden = true;
-  overlay.classList.add("ended");
-  startBtn.textContent = "↻ REPLAY";
-  startBtn.setAttribute("aria-label", "Replay scene");
   overlay.classList.remove("hide");
+  overlay.removeAttribute("aria-hidden");
   startBtn.focus({ preventScroll: true });
 }
 stage.onEnd = showEndScreen;
@@ -167,12 +166,15 @@ addEventListener("keydown", (e) => {
 loadScene(day)
   .then(async (def) => {
     await stage.load(def, day, today);
-    // Render a mid-scene still behind the start screen.
-    stage.seek(def.duration * 0.35);
+    // The opening frame is already rendered; show the title card over it while we wait.
     loaded = true;
     window.__ready = true;
     if (pendingStart) play(true);
-    else if (!window.__noAutoplay) autoplayTimer = window.setTimeout(() => play(false), AUTOPLAY_DELAY_MS);
+    else if (!window.__noAutoplay) {
+      showTitle();
+      if (!stage.sfx.ready) soundHint.hidden = false;
+      autoplayTimer = window.setTimeout(() => play(false, false), AUTOPLAY_DELAY_MS);
+    }
   })
   .catch((err) => {
     console.error(err);

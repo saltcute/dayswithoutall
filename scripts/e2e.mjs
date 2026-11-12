@@ -8,6 +8,8 @@ await p.goto("http://localhost:8799/");
 console.log("apex ->", p.url());
 await p.goto("http://one.localhost:8799/");
 await p.waitForFunction(() => window.__ready);
+console.log("no start screen on load:", await p.evaluate(() => document.querySelector(".overlay").classList.contains("hide")), "title card:", await p.isVisible(".titlecard.show"));
+await p.waitForFunction(() => window.__ready);
 console.log("day1 prev?", await p.$(".nav .prev") !== null, "next href:", await p.getAttribute(".nav .next", "href"));
 // autoplay: starts by itself ~2 s after load, silently (no gesture yet)
 await p.waitForTimeout(3000);

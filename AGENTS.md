@@ -26,9 +26,9 @@ scripts/screenshots.mjs  Playwright: headless render of scenes into ./shots for 
 ```
 
 ### Playback (src/main.ts)
-- The page shows the start screen, then autoplays the scene after 2 s (`AUTOPLAY_DELAY_MS`). Clicking the button starts it immediately.
+- There is no blocking start screen. The page renders the opening frame with the "DAY N" title card, then autoplays the scene after 2 s (`AUTOPLAY_DELAY_MS`).
 - Browsers block audio until a user gesture, so autoplay starts muted with a "Click anywhere for sound" hint. The first click or keypress anywhere unlocks the sound.
-- The scene plays once (`stage.loop = false`). When it ends, the start screen returns with a "↻ REPLAY" button and audio is suspended.
+- The scene plays once (`stage.loop = false`). When it ends, the title screen appears with a "↻ REPLAY" button and audio is suspended.
 - Test scripts set `window.__noAutoplay = true` to keep the start screen up.
 
 ### Routing rules (worker/index.ts)

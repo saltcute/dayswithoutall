@@ -104,8 +104,6 @@ button { font: inherit; color: inherit; }
 .overlay .fine { font-size: 11px; color: var(--muted); margin-top: 18px; opacity: .8; }
 .overlay { transition: opacity .5s; }
 .overlay.hide { opacity: 0; pointer-events: none; }
-.overlay .autoplay-note { font-size: 12px; color: var(--muted); margin-top: 12px; }
-.overlay.ended .autoplay-note { display: none; }
 /* keep the day counter, controls and navigation usable on top of the start/end screen */
 .hud, .controls, .nav, .archive-note { z-index: 11; }
 .sound-hint {

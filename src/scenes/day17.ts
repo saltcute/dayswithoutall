@@ -172,18 +172,51 @@ const scene: SceneDef = {
       scene.add(p.root);
       const desk = i % 6;
       const x = (desk % 3 - 1) * 4.2 + (i >= 6 ? 0.8 : -0.4), z = Math.floor(desk / 3) * 3.4 - 2.6 + 1.0;
-      return { p, x, z, faintAt: 21.6 + r.range(0, 4.5), fallSide: r.sign() };
+      const faintAt = 21.6 + r.range(0, 4.5);
+      r.sign(); // (kept so the rest of the seeded layout is unchanged)
+      // desk-mates (left: i < 6, right: i >= 6) faint away from each other
+      return { p, x, z, faintAt, fallSide: i >= 6 ? 1 : -1 };
     });
     const buyer = traders[4];
     const phone = box(0.08, 0.16, 0.03, 0x111111, 0, -0.05, 0.08);
     traders[1].p.handR.add(phone);
 
-    // Cards raining down (pure function of t, piling on the floor)
+    // Where each fainted trader ends up lying: from the feet, backwards (+Z, turned by fallSide)
+    const bodies = traders.filter((tr) => tr !== buyer).map(({ x, z, fallSide }) => [x, z, x + fallSide * 0.39 * 1.75, z + 0.92 * 1.75] as const);
+    const onBody = (px: number, pz: number) =>
+      bodies.some(([ax, az, bx, bz]) => {
+        const dx = bx - ax, dz = bz - az;
+        const k = clamp(((px - ax) * dx + (pz - az) * dz) / (dx * dx + dz * dz));
+        return Math.hypot(px - ax - dx * k, pz - az - dz * k) < 0.8;
+      });
+    // Cards raining down (pure function of t, piling on the floor, but not on/through anyone lying there)
     const rain = Array.from({ length: 70 }, (_, i) => {
       const m = card(CARD_COLORS[i % CARD_COLORS.length]);
       scene.add(m);
-      return { m, x: r.range(-7, 7), z: r.range(-5, 5), at: CRASH1 + 0.3 + r.range(0, 12), sp: r.range(1.2, 2.2), rx: r.range(-1, 1), ry: r.range(0, 6), sway: r.range(0.3, 0.8) };
+      const c = { m, x: r.range(-7, 7), z: r.range(-5, 5), at: CRASH1 + 0.3 + r.range(0, 12), sp: r.range(1.2, 2.2), rx: r.range(-1, 1), ry: r.range(0, 6), sway: r.range(0.3, 0.8) };
+      for (let n = 0; n < 20 && onBody(c.x + Math.sin((5 / c.sp) * 3) * c.sway, c.z); n++) {
+        c.x = r.range(-7, 7);
+        c.z = r.range(-5, 5);
+      }
+      return c;
     });
+    // The buyer's route to the board: along the front of the desk, up the aisle, behind the desks
+    const route: [number, number][] = [[buyer.x, buyer.z], [2.15, buyer.z], [2.15, -3.6], [0.2, -3.6]];
+    const legs = route.slice(1).map(([x, z], i) => Math.hypot(x - route[i][0], z - route[i][1]));
+    const routeLen = legs.reduce((a, b) => a + b, 0);
+    const WALK0 = 27.6, WALK1 = 31.5;
+    const walkAt = (u: number): [number, number, number] => {
+      let d = u * routeLen;
+      for (let i = 0; i < legs.length; i++) {
+        if (d <= legs[i] || i === legs.length - 1) {
+          const [ax, az] = route[i], [bx, bz] = route[i + 1];
+          const k = clamp(d / legs[i]);
+          return [lerp(ax, bx, k), lerp(az, bz, k), Math.atan2(bx - ax, bz - az)];
+        }
+        d -= legs[i];
+      }
+      return [0.2, -3.6, 0];
+    };
 
     sfx.ambient("crowd", 0.6);
 
@@ -227,11 +260,12 @@ const scene: SceneDef = {
           p.pose("faint", t, smooth(seg(t, tr.faintAt, tr.faintAt + 0.7)));
           p.root.rotation.y += tr.fallSide * 0.4;
         }
-        if (tr === buyer && t > 30) {
-          p.root.position.set(lerp(x, 0.2, smooth(seg(t, 30, 31.5))), 0, lerp(z, -3.6, smooth(seg(t, 30, 31.5))));
-          if (t < 31.5) {
-            p.root.rotation.y = Math.atan2(0.2 - x, -3.6 - z);
-            p.pose("walk", t);
+        if (tr === buyer && t > WALK0) {
+          const [wx, wz, wa] = walkAt(smooth(seg(t, WALK0, WALK1)));
+          p.root.position.set(wx, 0, wz);
+          if (t < WALK1) {
+            p.root.rotation.y = wa;
+            p.pose("walk", t * 1.4);
           } else if (t < 33) {
             p.face(0, -6);
             p.pose("point", t);
@@ -239,6 +273,12 @@ const scene: SceneDef = {
             p.face(0, 6);
             p.pose("cheer", t, 1);
           }
+        }
+        // cheering arms splay outward rather than crossing over the head
+        const cheering = (t < 11 && i % 3 === 2) || (tr === buyer && t > 33);
+        if (cheering) {
+          p.armL.rotation.z = Math.abs(p.armL.rotation.z);
+          p.armR.rotation.z = -Math.abs(p.armR.rotation.z);
         }
       });
     });

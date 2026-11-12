@@ -70,7 +70,7 @@ npm run dev            # Vite dev server at :5173 (use ?day=N&today=M)
 npm test               # vitest (shared logic)
 npm run build          # typecheck (app + worker) and build to dist/
 npm run preview        # build + `wrangler dev --env local` at :8799 (try http://one.localhost:8799/)
-npm run shots -- 1-5   # with dev server running: render scenes into ./shots/*.png
+npm run shots -- 1-5   # with `vite preview --port 4173` running: render scenes into ./shots/*.png
 npm run deploy         # build + wrangler deploy (needs `wrangler login`)
 ```
 

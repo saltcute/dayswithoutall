@@ -1,12 +1,13 @@
 // Render scenes headlessly and save screenshots to ./shots for visual review.
 // Usage: node scripts/screenshots.mjs [days...] [--times=5,15,25] [--url=http://localhost:5173]
-// Requires a running dev server (`npm run dev`) unless --url points elsewhere.
+// Default target is `vite preview` (http://localhost:4173, no HMR reloads mid-capture):
+//   npm run build && npx vite preview --port 4173 &   then   npm run shots -- 1-5
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 
 const args = process.argv.slice(2);
 const opt = (k, d) => (args.find((a) => a.startsWith(`--${k}=`)) ?? `=${d}`).split("=")[1];
-const base = opt("url", "http://localhost:5173");
+const base = opt("url", "http://localhost:4173");
 const fracs = opt("times", "0.15,0.5,0.85").split(",").map(Number);
 const days = args.filter((a) => !a.startsWith("--")).flatMap((a) => {
   const [x, y] = a.split("-").map(Number);
@@ -17,6 +18,7 @@ if (!days.length) for (let i = 1; i <= 31; i++) days.push(i);
 mkdirSync("shots", { recursive: true });
 const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+page.setDefaultTimeout(120_000); // software WebGL is slow on loaded machines
 let failures = 0;
 for (const day of days) {
   const errors = [];

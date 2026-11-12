@@ -81,7 +81,7 @@ const scene: SceneDef = {
     const prize = coin();
     prize.scale.setScalar(3);
     prize.rotation.x = Math.PI / 2;
-    prize.position.y = -0.05;
+    prize.position.y = -0.12; // pinched at its edge, held up past the fist
     B.handR.add(prize);
 
     // Judges at a table facing the stage
@@ -107,7 +107,8 @@ const scene: SceneDef = {
       for (let k = 0; k < 4; k++) {
         const p = new Player({ accessories: r.next() < 0.3 ? ["gloves"] : r.next() < 0.3 ? ["goggles"] : [] }, 2540 + tier * 10 + k);
         const x = -3.3 + k * 2.2 + (tier % 2) * 0.8 + r.range(-0.2, 0.2);
-        crowdP.push({ p, x, y: 0.5 + tier * 0.55 + 0.06 - 0.45, z: -4.2 - tier * 0.8 + 0.05 });
+        // seated legs (0.19 thick, at hip height) rest on top of the plank instead of sinking into it
+        crowdP.push({ p, x, y: 0.5 + tier * 0.55 + 0.06 + 0.095 - 0.5, z: -4.2 - tier * 0.8 + 0.05 });
         scene.add(p.root);
       }
 

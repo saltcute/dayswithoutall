@@ -23,6 +23,8 @@ src/audio/sfx.ts   Web Audio synthesizer; every sound effect and ambient bed is 
 src/scenes/        dayNN.ts (one per day) + generic.ts (fallback for days without a scene)
 tests/             vitest unit tests for shared/
 scripts/screenshots.mjs  Playwright: headless render of scenes into ./shots for visual review
+scripts/og-images.mjs    Playwright: renders public/og/dayNN.jpg, the per-day social preview (og:image)
+scripts/tweet.mjs        Daily X bot (GitHub Actions): renames the account and posts social/tweets.json
 ```
 
 ### Playback (src/main.ts)
@@ -54,7 +56,7 @@ scripts/screenshots.mjs  Playwright: headless render of scenes into ./shots for 
 - **Check visually** with `?lang=ja` / `?lang=zh-Hans`, e.g. `npm run shots -- 7 --url=…`. Keep sign translations short, since signs shrink text to fit.
 
 ## Writing a scene
-Create `src/scenes/dayNN.ts` (two-digit zero-padded, e.g. `day07.ts`). The registry in `src/scenes/index.ts` picks it up automatically through `import.meta.glob`, and it becomes its own lazy chunk. Then add or adjust its entry in `shared/sceneMeta.ts`.
+Create `src/scenes/dayNN.ts` (two-digit zero-padded, e.g. `day07.ts`). The registry in `src/scenes/index.ts` picks it up automatically through `import.meta.glob`, and it becomes its own lazy chunk. Then add or adjust its entry in `shared/sceneMeta.ts`, and render its social preview with `npm run og -- NN` (commit the new `public/og/dayNN.jpg`; set `FRAME[NN]` in the script if the default mid-scene frame is weak). Days without an image fall back to `public/og/generic.jpg` only when they have no scene, so a new scene needs its image.
 
 ```ts
 import type { SceneDef } from "../engine/stage";
@@ -93,6 +95,7 @@ npm run build          # typecheck (app + worker) and build to dist/
 npm run preview        # build + `wrangler dev --env local` at :8799 (try http://one.localhost:8799/)
 npm run shots -- 1-5   # with `vite preview --port 4173` running: render scenes into ./shots/*.png
 npm run i18n:extract   # with `vite preview` running: rebuild src/i18n/catalog.json from all scenes
+npm run og -- 10       # with `vite preview` running: render public/og/day10.jpg (no args = all + generic)
 node scripts/audit.mjs 1-5  # with `vite preview` running: report clipping and misplaced held props
 npm run deploy         # build + wrangler deploy (needs `wrangler login`)
 ```

@@ -1,7 +1,7 @@
 import { currentDay, DEFAULT_OUTAGE_START } from "../shared/dayCalc";
 import { parseWords, toWords } from "../shared/numberWords";
 import { type Dict, type Locale, negotiate, parseAcceptLanguage, readCookie, translate } from "../shared/i18n";
-import { metaFor } from "../shared/sceneMeta";
+import { metaFor, SCENE_COUNT } from "../shared/sceneMeta";
 import ja from "../src/i18n/locales/ja.json";
 import zhHans from "../src/i18n/locales/zh-Hans.json";
 
@@ -52,6 +52,12 @@ export default {
         out.headers.set("Cache-Control", "public, max-age=31536000, immutable");
         return out;
       }
+      if (url.pathname.startsWith("/og/") && res.ok) {
+        // Social preview images: not fingerprinted, so cache for a day only.
+        const out = new Response(res.body, res);
+        out.headers.set("Cache-Control", "public, max-age=86400");
+        return out;
+      }
       return res;
     }
 
@@ -89,6 +95,9 @@ export default {
     const meta = { title: translate(d, raw.title), subtitle: translate(d, raw.subtitle) };
     const title = translate(d, "Day {n} without ALL.Net: {title}", { n: day, title: meta.title });
     const pageUrl = urlFor(day);
+    // Rendered by scripts/og-images.mjs into public/og/.
+    const imageUrl = `${pageUrl}og/${day <= SCENE_COUNT ? `day${String(day).padStart(2, "0")}` : "generic"}.jpg`;
+    const imageAlt = `${translate(d, "DAY {n}", { n: day })}: ${meta.title}`;
     const head = [
       `<meta name="description" content="${escapeHtml(meta.subtitle)}">`,
       `<meta property="og:title" content="${escapeHtml(title)}">`,
@@ -96,7 +105,16 @@ export default {
       `<meta property="og:type" content="website">`,
       `<meta property="og:locale" content="${{ en: "en_US", "zh-Hans": "zh_CN", ja: "ja_JP" }[locale]}">`,
       `<meta property="og:url" content="${escapeHtml(pageUrl)}">`,
-      `<meta name="twitter:card" content="summary">`,
+      `<meta property="og:image" content="${escapeHtml(imageUrl)}">`,
+      `<meta property="og:image:type" content="image/jpeg">`,
+      `<meta property="og:image:width" content="1200">`,
+      `<meta property="og:image:height" content="630">`,
+      `<meta property="og:image:alt" content="${escapeHtml(imageAlt)}">`,
+      `<meta name="twitter:card" content="summary_large_image">`,
+      `<meta name="twitter:title" content="${escapeHtml(title)}">`,
+      `<meta name="twitter:description" content="${escapeHtml(meta.subtitle)}">`,
+      `<meta name="twitter:image" content="${escapeHtml(imageUrl)}">`,
+      `<meta name="twitter:image:alt" content="${escapeHtml(imageAlt)}">`,
       `<link rel="canonical" href="${escapeHtml(pageUrl)}">`,
       `<script>window.__DAY__=${day};window.__TODAY__=${today};window.__HOST_SUFFIX__=${JSON.stringify(split.suffix + port)};window.__LANG__=${JSON.stringify(locale)};</script>`,
     ].join("\n    ");

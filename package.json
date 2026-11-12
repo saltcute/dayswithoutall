@@ -10,7 +10,8 @@
     "preview": "npm run build && wrangler dev --env local --port 8799",
     "deploy": "npm run build && wrangler deploy",
     "shots": "node scripts/screenshots.mjs",
-    "i18n:extract": "node scripts/i18n-extract.mjs"
+    "i18n:extract": "node scripts/i18n-extract.mjs",
+    "og": "node scripts/og-images.mjs"
   },
   "dependencies": {
     "three": "^0.187.0"

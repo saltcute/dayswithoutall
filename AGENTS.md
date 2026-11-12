@@ -39,6 +39,20 @@ scripts/screenshots.mjs  Playwright: headless render of scenes into ./shots for 
 - `*.localhost` works the same way locally (`http://seven.localhost:8799/`) via `wrangler dev --env local` (the `local` env has no routes; with routes, wrangler rewrites the Host header). `DEV_NOW` in `.dev.vars` or `--var DEV_NOW:<iso>` overrides the clock.
 - With the plain Vite dev server (no Worker), use `?day=N&today=M`.
 
+## Internationalization (en, zh-Hans, ja)
+- **Keys are the English source text** (gettext style). Dictionaries live in `src/i18n/locales/{zh-Hans,ja}.json`; English needs none. Shared logic is in `shared/i18n.ts`, browser glue in `src/i18n/index.ts`.
+- **Scenes are translated automatically.** `ctx.caption()` and `TextTexture.draw()` (so `textPlane`, `sign`, `placard`, `banner` and cabinet screens) pass text through `trAuto()`. Text containing numbers is also matched in templated form: `"count #1,204"` is looked up as `"count #{0}"`.
+- **Hand-drawn canvas text** (`tt.paint(...)` + `fillText`) is NOT automatic. Wrap it: `c.fillText(trAuto("TO BE CONTINUED"), …)`, and add `cjkFonts()` to the canvas font. For a typewriter effect, translate the full string first, then slice the translation.
+- **UI strings** use `tr("Day {n} ▶", { n })` with named variables.
+- **Locale choice:** `?lang=` → the `lang` cookie (shared across all day subdomains) → `Accept-Language` / `navigator.languages` → English. All Chinese variants map to `zh-Hans`. The Worker localizes `<title>`, the description and og tags, sets `<html lang>`, and keeps `?lang` through redirects. The 🌐 picker sets the cookie and reloads.
+- **Fonts:** CSS and canvas use locale-ordered CJK fallbacks (`--cjk`, `cjkFonts()`), with Japanese glyph forms first for `ja`.
+- **After adding or changing any visible text:**
+  1. `npm run build`, then start `npx vite preview --port 4173`.
+  2. Run `npm run i18n:extract` to regenerate `src/i18n/catalog.json` by running every scene headlessly.
+  3. Add the new keys to both locale files.
+  4. Run `npm test`. `tests/i18n-coverage.test.ts` fails on missing keys, stale keys or broken `{placeholders}`.
+- **Check visually** with `?lang=ja` / `?lang=zh-Hans`, e.g. `npm run shots -- 7 --url=…`. Keep sign translations short, since signs shrink text to fit.
+
 ## Writing a scene
 Create `src/scenes/dayNN.ts` (two-digit zero-padded, e.g. `day07.ts`). The registry in `src/scenes/index.ts` picks it up automatically through `import.meta.glob`, and it becomes its own lazy chunk. Then add or adjust its entry in `shared/sceneMeta.ts`.
 
@@ -64,7 +78,7 @@ Rules:
 - `Player.pose(name, t, k)` resets all joints and then applies the pose. Call it every frame and apply small tweaks after it.
 - Characters face **+Z**. Cabinets face +Z with their origin at the floor center. Use `player.face(x, z)` and `player.travel(...)`.
 - Keep the camera **inside** enclosed rooms (below the ceiling lights at `h - 0.05`, default h = 4) and avoid clipping through actors.
-- Captions are short, dry and funny. Usually 5–8 per scene, 3–6 s each. The UI shows one at a time, so don't overlap them.
+- Captions are short, dry and funny. Usually 5–8 per scene, 3–6 s each. The UI shows one at a time, so don't overlap them. All visible text must be translated (see Internationalization).
 - Sound is synthesized only (`ctx.sfx.*`, including `ambient(name)` beds). No audio or model files. Sound calls before the user clicks "Enter" are harmless no-ops.
 - Everything is procedural low-poly: flat-shaded `mat()` / `glow()` from `engine/materials`, with low segment counts.
 - Put a one-off prop inside the scene file. Move it to `src/kit/` only when two or more scenes need it.
@@ -77,6 +91,7 @@ npm test               # vitest (shared logic)
 npm run build          # typecheck (app + worker) and build to dist/
 npm run preview        # build + `wrangler dev --env local` at :8799 (try http://one.localhost:8799/)
 npm run shots -- 1-5   # with `vite preview --port 4173` running: render scenes into ./shots/*.png
+npm run i18n:extract   # with `vite preview` running: rebuild src/i18n/catalog.json from all scenes
 npm run deploy         # build + wrangler deploy (needs `wrangler login`)
 ```
 

@@ -37,3 +37,19 @@ const w = await p.evaluate(() => document.documentElement.scrollWidth);
 console.log("no horizontal overflow:", w <= 390, "errors:", errs);
 await p.screenshot({ path: "shots/mobile-day30.png" });
 await b.close();
+
+// ---- i18n: Accept-Language, picker, cookie shared across day subdomains ----
+const b2 = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
+const ctxJa = await b2.newContext({ locale: "ja-JP" });
+const q = await ctxJa.newPage();
+const errs2 = []; q.on("pageerror", (e) => errs2.push(String(e)));
+await q.goto("http://three.localhost:8799/");
+await q.waitForFunction(() => window.__ready);
+console.log("ja browser -> lang:", await q.evaluate(() => document.documentElement.lang), "| title:", await q.title(), "| hud:", (await q.textContent(".hud")).replace(/\s+/g, " ").trim());
+await Promise.all([q.waitForNavigation(), q.selectOption("#lang", "zh-Hans")]);
+await q.waitForFunction(() => window.__ready);
+console.log("picked zh-Hans -> lang:", await q.evaluate(() => document.documentElement.lang), "| nav:", (await q.textContent(".nav")).replace(/\s+/g, " ").trim());
+// Note: browsers refuse Domain=.localhost cookies, so the choice can't carry across *.localhost
+// subdomains here. On the real domain the cookie is Domain=.dayswithoutall.net and it does.
+console.log("errors:", errs2);
+await b2.close();

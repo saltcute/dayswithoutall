@@ -1,5 +1,5 @@
 // Render scenes headlessly and save screenshots to ./shots for visual review.
-// Usage: node scripts/screenshots.mjs [days...] [--times=5,15,25] [--url=http://localhost:5173]
+// Usage: node scripts/screenshots.mjs [days...] [--times=0.2,0.5] [--lang=ja|zh-Hans] [--url=http://localhost:4173]
 // Default target is `vite preview` (http://localhost:4173, no HMR reloads mid-capture):
 //   npm run build && npx vite preview --port 4173 &   then   npm run shots -- 1-5
 import { chromium } from "playwright";
@@ -9,6 +9,7 @@ const args = process.argv.slice(2);
 const opt = (k, d) => (args.find((a) => a.startsWith(`--${k}=`)) ?? `=${d}`).split("=")[1];
 const base = opt("url", "http://localhost:4173");
 const fracs = opt("times", "0.15,0.5,0.85").split(",").map(Number);
+const lang = opt("lang", "");
 const days = args.filter((a) => !a.startsWith("--")).flatMap((a) => {
   const [x, y] = a.split("-").map(Number);
   return y ? Array.from({ length: y - x + 1 }, (_, i) => x + i) : [x];
@@ -27,7 +28,7 @@ for (const day of days) {
   const onError = (e) => errors.push(String(e));
   page.on("console", onConsole);
   page.on("pageerror", onError);
-  await page.goto(`${base}/?day=${day}&today=40`, { waitUntil: "load" });
+  await page.goto(`${base}/?day=${day}&today=40${lang ? `&lang=${lang}` : ""}`, { waitUntil: "load" });
   try {
     await page.waitForFunction(() => window.__ready === true, null, { timeout: 30000 });
   } catch {
@@ -39,7 +40,7 @@ for (const day of days) {
   for (const f of fracs) {
     const t = +(dur * f).toFixed(2);
     await page.evaluate((t) => window.__stage.seek(t), t);
-    await page.screenshot({ path: `shots/day${String(day).padStart(2, "0")}-${String(t).padStart(5, "0")}.png` });
+    await page.screenshot({ path: `shots/${lang ? lang + "-" : ""}day${String(day).padStart(2, "0")}-${String(t).padStart(5, "0")}.png` });
   }
   const blank = await page.evaluate(() => {
     const c = document.querySelector("#stage canvas");

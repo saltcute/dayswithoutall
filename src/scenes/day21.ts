@@ -32,7 +32,7 @@ const scene: SceneDef = {
 
     // --- The camp ---
     const fire = campfire(1.1);
-    fire.group.position.set(-1.2, 0, 1.6);
+    fire.group.position.set(-1.6, 0, 1.8);
     scene.add(fire.group);
     // tribunal
     const TZ = -4.5;
@@ -46,12 +46,12 @@ const scene: SceneDef = {
     scene.add(banner);
     const lectern = new THREE.Group();
     lectern.add(box(0.8, 1.0, 0.5, 0x7a5539, 0, 0.5, 0), box(0.95, 0.06, 0.6, 0x5c4033, 0, 1.03, 0));
-    lectern.position.set(0, 0.62, TZ + 0.75);
+    lectern.position.set(0, 0.62, TZ + 0.9);
     scene.add(lectern);
     const elderX = [-1.8, 0, 1.8];
     elderX.forEach((x) => {
       const s = stool(0x3d2817);
-      s.position.set(x, 0.62, TZ - 0.15);
+      s.position.set(x, 0.62, TZ - 0.3);
       scene.add(s);
     });
     // gong
@@ -68,7 +68,7 @@ const scene: SceneDef = {
     gongG.rotation.y = 0.5;
     scene.add(gongG);
     const ringer = new Player({ accessories: ["mask", "robe"], robe: 0x3d2817, hairStyle: "mohawk", hair: 0xd62828 }, 2190);
-    ringer.at(-3.6, TZ + 1.7);
+    ringer.at(-3.75, TZ + 1.6);
     ringer.face(-4.3, TZ + 0.6);
     scene.add(ringer.root);
     const mallet = box(0.08, 0.6, 0.08, 0x6b4423, 0, -0.3, 0.1);
@@ -98,19 +98,36 @@ const scene: SceneDef = {
     scene.add(heretic.root);
     const elders = elderX.map((x, i) => {
       const e = new Player({ accessories: i === 1 ? ["robe", "beard", "crown"] : ["robe", "beard", "hood"], robe: i === 1 ? 0x9d0208 : 0x3c096c, hairStyle: "bald", skin: 0xe8b894 }, 2110 + i);
-      e.at(x, TZ - 0.15);
+      e.at(x, TZ - 0.3); // far enough back that seated legs clear the lectern
       e.root.position.y = 0.62;
       scene.add(e.root);
       return e;
     });
     const gavel = new THREE.Group();
     gavel.add(box(0.05, 0.35, 0.05, 0x5c3a1e, 0, -0.1, 0), box(0.22, 0.12, 0.12, 0x5c3a1e, 0, -0.3, 0));
-    gavel.position.set(0, -0.05, 0.05);
+    gavel.position.set(0, -0.02, 0.04);
+    gavel.rotation.x = -1.2; // sticks out of the fist like a hammer
     elders[1].handR.add(gavel);
     const verdict = textPlane(["GUILTY"], 1.8, 0.9, { bg: "#fff8e8", fg: "#c1121f", size: 80, border: "#2b2b2b", borderWidth: 10 });
     scene.add(verdict);
 
     // tribe with torches
+    const CAUGHT = 8.4, DRAG0 = 10.2, DRAG1 = 15.8, GONG1 = 16.5, VERDICT = 25.2, SENTENCE = 28.6;
+    const KX = 0, KZ = -2.2; // where the accused kneels
+    const HX0 = SX + 0.2, HZ0 = SZ + 0.75; // where the drag starts (in front of the shack)
+    // drag direction: a straight line that slips between the cabinet and the shack posts
+    const DL = Math.hypot(KX - HX0, KZ - HZ0);
+    const DX = (KX - HX0) / DL, DZ = (KZ - HZ0) / DL;
+    // two guards in single file: one pulls ahead, one pushes from behind
+    const GA = 6, GB = 3;
+    const GA_OFF = 0.8, GB_OFF = -1.45;
+    // after the drag the guards flank the kneeling heretic
+    const guardEnd = (i: number) => (i === GA ? { x: KX - 1.2, z: KZ - 0.15 } : { x: KX + 1.2, z: KZ - 0.15 });
+    // gathering spots on an arc in front of the tribunal, leaving a gap where the procession arrives;
+    // slots are assigned so that the walkers' paths don't cross. The three behind the shack go last,
+    // crossing the drag line once the procession has passed.
+    const slotOf: Record<number, number> = { 2: 0, 1: 1, 0: 2, 4: 3, 5: 4, 7: 5, 8: 6, 9: 7 };
+    const ringA = (i: number) => (i < 3 ? -0.45 + i * 0.1 : -0.2 + (i / 9) * 1.2) * Math.PI;
     const tribe = Array.from({ length: 10 }, (_, i) => {
       const p = new Player({
         shirt: r.pick([0x6b4423, 0x7f5539, 0x5e548e, 0x264653, 0x9c6644]),
@@ -120,23 +137,26 @@ const scene: SceneDef = {
       }, 2120 + i);
       p.handR.add(heldTorch(i === 2 || i === 7));
       scene.add(p.root);
-      // surround the shack, then a semicircle behind the accused
-      const a0 = (i / 9) * Math.PI * 1.2 - 0.1 + Math.PI * 0.4;
-      const a1 = Math.PI * (0.15 + (i / 9) * 0.7);
+      // surround the shack (front and sides), then an arc behind the accused
+      const a0 = ringA(i);
+      const guard = i === GA || i === GB;
+      const slot = slotOf[i] ?? 0;
+      const a1 = Math.PI * (0.38 + slot * 0.09);
+      const late = i < 3;
       return {
         p,
-        x0: SX + Math.cos(a0) * 9, z0: SZ + Math.sin(a0) * 9,
-        x1: SX + Math.cos(a0) * 2.6, z1: SZ + Math.sin(a0) * 2.6,
-        x2: Math.cos(a1) * 3.4, z2: -1.8 + Math.sin(a1) * 2.6,
-        guard: i === 0 || i === 9,
+        x0: SX + Math.cos(a0) * 9, z0: SZ + Math.sin(a0) * 9 + (i === 9 ? 4 : 0), // (keep out of the campfire)
+        x1: SX + Math.cos(a0) * 3, z1: SZ + Math.sin(a0) * 3,
+        x2: Math.cos(a1) * 3.6, z2: -1.8 + Math.sin(a1) * 2.7,
+        g0: late ? DRAG0 + 3.6 + i * 0.3 : DRAG0 + 0.5 + (7 - slot) * 0.25,
+        g1: late ? DRAG1 + 2.2 : DRAG1 + 0.5,
+        guard,
       };
     });
 
     sfx.ambient("fire", 0.6);
     sfx.ambient("crickets", 0.4);
 
-    const CAUGHT = 8.4, DRAG0 = 10.2, DRAG1 = 15.8, GONG1 = 16.5, VERDICT = 25.2, SENTENCE = 28.6;
-    const KX = 0, KZ = -2.2; // where the accused kneels
     ctx.update((t) => {
       fire.update(t);
       cabGlow.intensity = 4 + Math.sin(t * 10) * 0.6;
@@ -149,12 +169,13 @@ const scene: SceneDef = {
         heretic.face(SX, SZ - 1);
         heretic.pose("airTap", t, 1);
       } else if (t < DRAG0) {
-        heretic.root.position.set(hp.x, 0, hp.z + seg(t, CAUGHT, CAUGHT + 0.4) * 0.3);
+        const sk = smooth(seg(t, CAUGHT, CAUGHT + 0.6));
+        heretic.root.position.set(lerp(hp.x, HX0, sk), 0, lerp(hp.z, HZ0, sk));
         heretic.face(SX - 2, SZ + 4);
         heretic.pose("stop", t);
       } else if (t < 31.5) {
         const dk = smooth(seg(t, DRAG0, DRAG1));
-        const x = lerp(hp.x, KX, dk), z = lerp(hp.z + 0.3, KZ, dk);
+        const x = lerp(HX0, KX, dk), z = lerp(HZ0, KZ, dk);
         heretic.root.position.set(x, 0, z);
         if (dk < 1) {
           heretic.face(SX, SZ); // looking back at the cabinet
@@ -177,35 +198,40 @@ const scene: SceneDef = {
       }
 
       // tribe: approach the shack, drag, gather
+      const dragK = smooth(seg(t, DRAG0, DRAG1));
+      const hx = lerp(HX0, KX, dragK), hz = lerp(HZ0, KZ, dragK);
       tribe.forEach((m, i) => {
         const { p } = m;
         const ak = smooth(seg(t, 4.5 + (i % 4) * 0.4, CAUGHT));
         let x = lerp(m.x0, m.x1, ak), z = lerp(m.z0, m.z1, ak);
         let walking = ak > 0 && ak < 1;
+        let dragging = false;
         if (m.guard) {
-          const side = i === 0 ? 1 : -1;
-          const hx = heretic.root.position.x, hz = heretic.root.position.z;
+          // single file along the drag line, then step aside to flank the kneeling heretic
+          const off = i === GA ? GA_OFF : GB_OFF;
+          const end = guardEnd(i);
           const gk = smooth(seg(t, CAUGHT + 0.6, DRAG0));
-          if (t > CAUGHT + 0.6 && t < 31.5) {
-            x = lerp(x, hx + side * 0.55, gk);
-            z = lerp(z, hz + 0.45 * (t > DRAG1 ? 1 : -1), gk);
-            walking = (gk < 1 || t < DRAG1) && t > CAUGHT + 0.6;
-          } else if (t >= 31.5) {
-            x = KX + side * 0.6;
-            z = KZ + 0.45;
-            walking = false;
+          const fk = smooth(seg(t, DRAG1 - 0.2, DRAG1 + 0.7));
+          if (t > CAUGHT + 0.6) {
+            const lx = lerp(hx + DX * off, end.x, fk), lz = lerp(hz + DZ * off, end.z, fk);
+            x = lerp(x, lx, gk);
+            z = lerp(z, lz, gk);
+            walking = t < DRAG1 + 0.7;
+            dragging = t > DRAG0 && t < DRAG1;
           }
         } else {
-          const gk = smooth(seg(t, DRAG0 + 0.5 + (i % 3) * 0.3, DRAG1 + 0.5));
+          const gk = smooth(seg(t, m.g0, m.g1));
           x = lerp(x, m.x2, gk);
           z = lerp(z, m.z2, gk);
           if (gk > 0 && gk < 1) walking = true;
         }
         p.root.position.set(x, 0, z);
         if (walking) {
-          if (m.guard && t > DRAG0) p.face(KX, KZ);
+          if (m.guard && t > CAUGHT + 0.6) {
+            if (t < DRAG0) p.face(HX0 + DX * (i === GA ? GA_OFF : GB_OFF) * 2, HZ0 + DZ * (i === GA ? GA_OFF : GB_OFF) * 2);
+            else p.face(x + DX, z + DZ);
+          } else if (t > DRAG0) p.face(m.x2, m.z2);
           else p.root.rotation.y = Math.atan2(m.x1 - m.x0, m.z1 - m.z0);
-          if (!m.guard && t > DRAG0) p.face(m.x2, m.z2);
           p.pose("walk", t);
         } else if (t < DRAG0) {
           p.face(SX, SZ);
@@ -215,12 +241,13 @@ const scene: SceneDef = {
           if (t > SENTENCE + 0.3 && t < SENTENCE + 2.2) p.pose("stop", t);
           else if (t > SENTENCE + 2.2) {
             p.pose(i % 3 === 0 ? "sad" : i % 3 === 1 ? "reach" : "idle", t, 0.7);
-            if (t > 32) p.face(SX, SZ);
+            if (t > 32) p.face(SX, SZ - 4); // turn toward the shack (aimed a bit low so nobody faces into a neighbour)
           } else p.pose("idle", t);
         }
         // torch arm
-        if (!(t > SENTENCE + 2.2 && i % 3 === 1)) p.armR.rotation.set(-0.6, 0, 0.1);
-        if (m.guard && t > CAUGHT + 0.6 && t < 31.5) p.armL.rotation.set(-1.1, 0, 0.5 * (i === 0 ? 1 : -1));
+        p.armR.rotation.set(-0.6, 0, 0.1); // (reachers too: a torch thrust forward would hit the person in front)
+        // the front guard hauls the heretic by the collar, the rear one shoves
+        if (dragging) p.armL.rotation.set(i === GA ? 0.9 : -0.5, 0, i === GA ? 0 : -0.15);
       });
 
       // elders

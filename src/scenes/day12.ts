@@ -31,11 +31,12 @@ const scene: SceneDef = {
 
     // Wreckage
     const wreck = truck(0x6b4f3a);
-    wreck.position.set(-2.4, 0.7, -5.5);
-    wreck.rotation.set(0, 0.5, Math.PI / 2.1);
+    // wreckage stays by the kerbs, clear of the shambling lanes (|x| < ~2.7)
+    wreck.position.set(-3.3, 0.7, -5.5);
+    wreck.rotation.set(0, 0.35, Math.PI / 2.1);
     scene.add(wreck);
     const fallen = cabinet("round");
-    fallen.group.position.set(2.4, 0.45, 0.5);
+    fallen.group.position.set(3.9, 0.6, 0.0);
     fallen.group.rotation.set(-1.45, 0, 0.3);
     scene.add(fallen.group);
     const standing = cabinet("slider");
@@ -44,7 +45,8 @@ const scene: SceneDef = {
     scene.add(standing.group);
     for (let i = 0; i < 14; i++) {
       const d = rock(r.range(0.15, 0.4), 120 + i, r.pick([0x5a5a5a, 0x6b5b4b, 0x444444]));
-      d.position.set(r.range(-3, 3), d.position.y, r.range(-22, 14));
+      const rx = r.range(-3, 3);
+      d.position.set(Math.sign(rx) * (3.0 + Math.abs(rx) * 0.15), d.position.y, r.range(-22, 14));
       scene.add(d);
     }
     // scattered flyers
@@ -81,6 +83,8 @@ const scene: SceneDef = {
       speed: r.range(0.42, 0.5),
       tapper: i % 3 === 0,
     }));
+    // the back row never shambles faster than the zombie ahead of it in its lane
+    for (let i = 4; i < zs.length; i++) zs[i].speed = Math.min(zs[i].speed, zs[i - 4].speed);
     zombies.forEach((z) => scene.add(z.root));
 
     // The civilian

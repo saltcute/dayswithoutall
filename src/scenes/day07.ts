@@ -34,6 +34,7 @@ const scene: SceneDef = {
     });
     const target = cabs[3]; // the one glowing INSERT CREDIT, like a siren
     const tx = target.group.position.x;
+    const brawlC = new THREE.Vector3(tx, 0, -2.2);
     const slot = new THREE.Vector3(tx + 0.32, 1.02, -3.95);
     // a little moonlight from a broken skylight on the target cab
     const moon = new THREE.SpotLight(0xaac4ff, 25, 9, 0.35, 0.6, 1.2);
@@ -54,13 +55,27 @@ const scene: SceneDef = {
     const sleepers = [0, 1, 2, 3, 4].map((i) => new Player({ hairStyle: r.pick(["short", "spiky", "twin", "long", "bun"] as const), shirt: r.pick([0xe63946, 0x3a86ff, 0xffd166, 0x8e44ad, 0xfb5607]), accessories: i % 2 ? ["gloves"] : ["headband"] }, 710 + i));
     const all = [elder, sneak, ...sleepers];
     all.forEach((p) => scene.add(p.root));
-    const bedX = [-4.5, -3, 1.5, 3, 4.5, 6, -1.5];
+    const bedX = [-4.5, -3, 1.5, 3, 4.5, 0, -1.5]; // each on its own sleeping bag
     const bedZ = (i: number) => 0.6 + (i % 2) * 0.9;
-    // where everyone ends up lying after the brawl
+    // brawl ring: everyone keeps their own slot (ordered by where they come from), so nobody walks through anybody
+    const ringSlot = [5, 6, 2, 1, 0, 3, 4];
+    const RING_R = 1.15, RING_A0 = -0.59;
+    // where everyone ends up lying after the brawl: a star, feet in, heads out, in ring order,
+    // so each fighter falls straight back from his ring spot. The elder (slot 5) and slot 4
+    // flank the +x side, which stays clear for the coin's getaway (and the camera).
+    const STAR_Z = -1.25, STAR_A0 = 1.99;
+    const SLOT_A = (Math.PI * 2) / 7;
+    // ring speed chosen so the ring lines up with the star at the collapse (story time 21)
+    const RING_W = (STAR_A0 - RING_A0 + Math.PI * 2) / (21 - 14);
     const sprawl = all.map((_, i) => {
-      const a = (i / all.length) * Math.PI * 2 + 0.3;
-      return [tx + Math.cos(a) * 1.5, -1.8 + Math.sin(a) * 1.2, a + Math.PI / 2] as const;
+      const a = STAR_A0 + ringSlot[i] * SLOT_A + (i === 0 ? 0.1 : 0);
+      return [tx + Math.cos(a) * 0.85, STAR_Z + Math.sin(a) * 0.7, Math.atan2(-Math.cos(a), -Math.sin(a))] as const;
     });
+    const ringPos = (i: number, s: number, out: THREE.Vector3) => {
+      const a = RING_A0 + ringSlot[i] * SLOT_A + (s - 14) * RING_W;
+      const rad = RING_R + Math.sin(s * 3 + i) * 0.08;
+      return out.set(brawlC.x + Math.cos(a) * rad, 0, brawlC.z + Math.sin(a) * rad);
+    };
 
     // THE coin (in the sneaker's hand), plus the pouch coins that fly in slow-mo
     const coinHolder = new THREE.Group();
@@ -70,8 +85,9 @@ const scene: SceneDef = {
     scene.add(coinHolder);
     const rollPos = (t: number, out: THREE.Vector3) => {
       const k1 = seg(t, 25, 31), k2 = seg(t, 32, 38.5);
-      const x = t < 31.5 ? lerp(brawlC.x, tx + 1.6, easeOut(k1)) : lerp(tx + 1.6, cabs[4].group.position.x + 0.1, smooth(k2));
-      const z = t < 31.5 ? lerp(brawlC.z, 0.4, easeOut(k1)) + Math.sin(k1 * Math.PI) * 0.8 : lerp(0.4, -4.3, smooth(k2));
+      // out of the pile through the gap in the star, then around the sleepers' heads to cab 4
+      const x = t < 31.5 ? lerp(tx, tx + 2.9, easeOut(k1)) : lerp(tx + 2.9, cabs[4].group.position.x + 0.1, smooth(k2));
+      const z = t < 31.5 ? lerp(STAR_Z, STAR_Z, easeOut(k1)) - Math.sin(k1 * Math.PI) * 0.45 : lerp(STAR_Z, -4.3, smooth(k2));
       return out.set(x, 0.11, z);
     };
     const v2 = new THREE.Vector3();
@@ -88,6 +104,7 @@ const scene: SceneDef = {
     const cloudMat = new THREE.MeshLambertMaterial({ color: 0xeadfcb, transparent: true, opacity: 0.9, flatShading: true });
     for (let i = 0; i < 9; i++) {
       const c = new THREE.Mesh(new THREE.IcosahedronGeometry(r.range(0.55, 0.9), 0), cloudMat);
+      c.userData.noAudit = true; // the cloud is meant to swallow the fighters
       scene.add(c);
       cloud.push(c);
     }
@@ -95,6 +112,7 @@ const scene: SceneDef = {
     const starGeo = new THREE.OctahedronGeometry(0.35, 0);
     const pows = [0, 1, 2].map(() => {
       const m = mesh(starGeo, mat(0xfff36b, { emissive: 0x806000 }), false, false);
+      m.userData.noAudit = true; // comic-book effect, drawn over the fighters on purpose
       scene.add(m);
       return m;
     });
@@ -103,7 +121,6 @@ const scene: SceneDef = {
 
     // Story time: slow-mo stretches SLOW_A..SLOW_B to a quarter speed
     const story = (t: number) => keys(t, [[0, 0], [SLOW_A, SLOW_A], [SLOW_B, SLOW_A + (SLOW_B - SLOW_A) * 0.25], [40, 40 - (SLOW_B - SLOW_A) * 0.75]], (x) => x);
-    const brawlC = new THREE.Vector3(tx, 0, -2.2);
     const v = new THREE.Vector3();
 
     // --- Timeline ---
@@ -125,8 +142,9 @@ const scene: SceneDef = {
           if (i === 0 && t > 10) p.head.rotation.x = -0.6 * seg(t, 10, 10.5);
         } else if (t < 14) {
           // up and charging toward the cabinet
-          const k = smooth(seg(t, i === 0 ? 10.7 : 11.6 + i * 0.12, 13.8));
-          v.set(bx, 0, bz).lerp(brawlC, k * 0.75);
+          const k = smooth(seg(t, i === 0 ? 12 : 11.6 + i * 0.12, 13.8));
+          ringPos(i, 14, v);
+          v.set(lerp(bx, v.x, k), 0, lerp(bz, v.z, k));
           p.root.position.copy(v);
           if (i === 0 && t < 12) {
             p.face(tx, -3.5);
@@ -153,7 +171,9 @@ const scene: SceneDef = {
         sneak.pose("reach", t, seg(t, 9, 10.4));
         sneak.torso.rotation.x = 0.35;
       } else if (t < 14) {
-        sneak.root.position.set(slot.x + 0.05, 0, -3.2);
+        ringPos(1, 14, v);
+        const k = smooth(seg(t, 12.8, 14));
+        sneak.root.position.set(lerp(slot.x + 0.05, v.x, k), 0, lerp(-3.2, v.z, k));
         sneak.face(0, 2);
         sneak.pose("stop", t);
         sneak.armR.rotation.x = -2.6; // coin held high: "IT'S MINE"
@@ -161,22 +181,23 @@ const scene: SceneDef = {
       // the brawl: everyone orbits a dusty centre, swinging
       if (brawl) {
         all.forEach((p, i) => {
-          const a = s * (1.5 + (i % 3) * 0.4) + (i / all.length) * Math.PI * 2;
-          const rad = 0.65 + Math.sin(s * 3 + i) * 0.2;
-          p.root.position.set(brawlC.x + Math.cos(a) * rad, Math.abs(Math.sin(s * 5 + i)) * 0.25, brawlC.z + Math.sin(a) * rad);
+          ringPos(i, s, p.root.position);
+          p.root.position.y = Math.abs(Math.sin(s * 5 + i)) * 0.25;
           p.face(brawlC.x, brawlC.z);
           p.pose(i % 2 ? "punch" : "fight", s);
-          p.body.rotation.z = Math.sin(s * 4 + i) * 0.3;
+          p.body.rotation.z = Math.sin(s * 4 + i) * 0.15;
         });
       } else if (t >= 24) {
+        const s24 = story(24);
         all.forEach((p, i) => {
           const [x, z, ry] = sprawl[i];
           const k = smooth(seg(t, 24, 24.6 + i * 0.08));
-          p.root.position.set(lerp(brawlC.x, x, k), 0, lerp(brawlC.z, z, k));
+          ringPos(i, s24, v);
+          p.root.position.set(lerp(v.x, x, k), 0, lerp(v.z, z, k));
           p.root.rotation.y = ry;
           p.pose("faint", t, k);
           p.torso.rotation.x = -Math.abs(Math.sin(t * 3 + i)) * 0.06 * k; // panting
-          if (i === 0 && t > 30) p.armR.rotation.set(-1.2 - bump(t, 30, 33.5) * 1.6, 0, 1.2); // feeble "...the coin..."
+          if (i === 0 && t > 30) p.armR.rotation.set(-0.2 - bump(t, 30, 33.5) * 1.4, 0, -0.7); // feeble "...the coin..."
         });
       }
 
@@ -212,7 +233,7 @@ const scene: SceneDef = {
       cloud.forEach((c, i) => {
         c.visible = cloudK > 0.02;
         const a = i * 2.4 + s * 2;
-        c.position.set(brawlC.x + Math.cos(a) * 0.7, 0.9 + Math.sin(i * 1.7 + s * 3) * 0.5, brawlC.z + Math.sin(a) * 0.6);
+        c.position.set(brawlC.x + Math.cos(a) * RING_R, 0.9 + Math.sin(i * 1.7 + s * 3) * 0.5, brawlC.z + Math.sin(a) * RING_R);
         c.scale.setScalar(cloudK * (1 + Math.sin(s * 6 + i) * 0.15));
       });
       pows.forEach((p, i) => {
@@ -282,10 +303,10 @@ const scene: SceneDef = {
       { t: SLOW_B, pos: [tx - 3.0, 1.5, 0.8], look: [tx, 1.1, -2.2], fov: 48 },
       { t: 23.8, pos: [tx - 0.5, 3.0, 3.2], look: [tx, 0.8, -2.2], fov: 54 },
       { t: 27.5, pos: [tx + 0.2, 3.6, 1.4], look: [tx, 0.2, -1.8], fov: 56 },
-      { t: 30, pos: [tx + 2.6, 0.45, 1.4], look: [tx + 1.6, 0.1, 0.4], fov: 46 },
-      { t: 32.5, pos: [tx + 2.4, 0.5, 1.6], look: [tx + 1.7, 0.15, -0.5], fov: 50 },
-      { t: 38.6, pos: [tx + 1.6, 0.4, -1.4], look: [cabs[4].group.position.x, 0.2, -4.3], fov: 48 },
-      { t: 40, pos: [tx + 1.6, 0.42, -1.5], look: [cabs[4].group.position.x, 0.2, -4.3], fov: 46 },
+      { t: 30, pos: [tx + 3.9, 0.45, STAR_Z + 1.0], look: [tx + 2.9, 0.1, STAR_Z], fov: 46 },
+      { t: 32.5, pos: [tx + 3.6, 0.5, STAR_Z + 1.4], look: [tx + 2.8, 0.15, STAR_Z - 1.0], fov: 50 },
+      { t: 38.6, pos: [tx + 3.6, 0.6, -1.9], look: [cabs[4].group.position.x, 0.2, -4.3], fov: 48 },
+      { t: 40, pos: [tx + 3.6, 0.62, -2.0], look: [cabs[4].group.position.x, 0.2, -4.3], fov: 46 },
     ]);
     ctx.flash(10.6, "#ff3355", 0.3);
     ctx.shake(10.6, 0.15, 0.5);

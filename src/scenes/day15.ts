@@ -79,7 +79,7 @@ const scene: SceneDef = {
     for (let row = 0; row < 3; row++)
       for (let c = 0; c < 4; c++) {
         const p = new Player({ accessories: ["robe", "hood"], robe: robes[(row + c) % robes.length], skin: r.pick([0xf5d0b0, 0xc98e66, 0xe8b894, 0x9a6a48]) }, 1500 + row * 10 + c);
-        p.at((c - 1.5) * 1.25 + (row % 2) * 0.35, -1.6 + row * 1.35, Math.PI);
+        p.at((c - 1.5) * 1.35 + (row % 2) * 0.35, -1.6 + row * 1.9, Math.PI); // rows far enough apart that a full bow clears the robe in front
         p.root.rotation.y = Math.PI;
         scene.add(p.root);
         flock.push({ p, row });
@@ -97,7 +97,7 @@ const scene: SceneDef = {
     scene.add(ledge);
     const kevin = new Player({ shirt: 0xffd166, pants: 0x3d405b, hairStyle: "cap", hair: 0x3a86ff, accessories: ["backpack"] }, 1598);
     kevin.at(-4.6, -2.6);
-    kevin.root.position.y = 3.65;
+    kevin.root.position.y = 3.76; // stand on the ledge's top edge, not in it
     scene.add(kevin.root);
     const flashlight = box(0.08, 0.25, 0.08, 0x333333, 0, -0.08, 0.05);
     const lens = box(0.1, 0.03, 0.1, glow(0xfff6c8), 0, -0.21, 0.05);
@@ -130,13 +130,16 @@ const scene: SceneDef = {
           p.armL.rotation.x = p.armR.rotation.x = -2.6 * smooth(seg(t, LIGHT_ON, LIGHT_ON + 1)) - 0.3;
           p.torso.rotation.x = -0.15;
         } else p.pose("bow", t, 1);
+        // raised arms splay outward so they clear the hood
+        if (p.armL.rotation.x < -2) p.armL.rotation.z = Math.max(0.3, Math.abs(p.armL.rotation.z));
+        if (p.armR.rotation.x < -2) p.armR.rotation.z = -Math.max(0.3, Math.abs(p.armR.rotation.z));
       });
       // priest
       if (t < 17) priest.pose("idle", t);
       else if (t < LIGHT_ON) {
         priest.pose("talk", t * 1.6);
-        priest.armL.rotation.set(-2.7 + Math.sin(t * 3) * 0.2, 0, -0.4);
-        priest.armR.rotation.set(-2.7 - Math.sin(t * 3) * 0.2, 0, 0.4);
+        priest.armL.rotation.set(-2.7 + Math.sin(t * 3) * 0.2, 0, 0.4);
+        priest.armR.rotation.set(-2.7 - Math.sin(t * 3) * 0.2, 0, -0.4);
         priest.head.rotation.x = -0.35;
       } else if (t < LIGHT_OFF + 1) {
         priest.pose("cheer", t, 0.2);

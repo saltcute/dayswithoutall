@@ -45,12 +45,14 @@ const scene: SceneDef = {
     room.lamp.color.set(0x8fa0ff);
     room.lamp.intensity = 5;
     room.neon.visible = false;
+    // close the room off so the reverse shots don't look out at the dawn sky
+    scene.add(box(10.4, 4.2, 0.2, 0x2a1d50, 0, 2.1, IZ + 4.6), box(10.4, 0.1, 9.4, 0x1a1236, 0, 4.05, IZ + 0.5));
     const kinds: CabKind[] = ["round", "slider", "lever", "round", "slider"];
     kinds.forEach((k, i) => {
       const c = cabinet(k);
       c.setScreen("off");
-      c.group.position.set(-4 + i * 2, 0, IZ - 3.3);
-      if (i === 2) c.group.position.x = 3.9;
+      // (two of these used to share x≈4; spread along the back wall, clear of the table)
+      c.group.position.set([-4, -2.5, 3.9, 2.4, -1.0][i], 0, IZ - 3.3);
       scene.add(c.group);
     });
     const tbl = table(1.2, 0.7, 0x5c4033);
@@ -77,8 +79,13 @@ const scene: SceneDef = {
 
     // --- People ---
     const N = 6;
-    const outside: [number, number][] = [[-3.2, -3.5], [-1.8, -2.4], [0.6, -3.8], [2.2, -2.6], [-0.6, -1.2], [3.4, -4.2]];
-    const inside: [number, number][] = [[-1.5, -1.3], [-0.8, -0.8], [0.0, -0.6], [0.8, -0.8], [1.5, -1.3], [-1.1, 0.0]];
+    const outside: [number, number][] = [[-3.4, -2.9], [-1.8, -2.4], [0.6, -3.8], [2.2, -2.6], [-0.6, -1.2], [3.7, -4.2]];
+    // A fan around the router: everyone faints backwards, radially outwards,
+    // so the bodies end up like petals instead of in a pile.
+    const inside: [number, number][] = [-76, -47, -19, 19, 47, 76].map((deg) => {
+      const a = (deg * Math.PI) / 180;
+      return [Math.sin(a) * 1.6, -2.4 + Math.cos(a) * 1.6];
+    });
     const people = Array.from({ length: N }, (_, i) => {
       const p = new Player({ hairStyle: (["twin", "cap", "short", "spiky", "long", "bun"] as const)[i], accessories: i % 2 ? ["gloves"] : i === 2 ? ["glasses", "towel"] : [] }, 2710 + i);
       scene.add(p.root);
@@ -103,7 +110,7 @@ const scene: SceneDef = {
         const [ix, iz] = inside[i];
         if (t < 12) {
           const go = seg(t, 7 + i * 0.15, enterAt(i));
-          p.root.visible = go < 0.98;
+          p.root.visible = go < 0.97;
           if (t < 6.4) {
             p.root.position.set(ox, 0, oz);
             p.root.rotation.y = (i * 1.3) % 3 - 1;
@@ -115,13 +122,13 @@ const scene: SceneDef = {
             p.pose("stop", t); // startled
             p.body.position.y = Math.abs(Math.sin((t - 6.4) * 9)) * 0.3;
           } else {
-            p.travel(ox, oz, (i - 2.5) * 0.15, -6, go);
+            p.travel(ox, oz, (i - 2.5) * 0.15, -5.4, go); // the door is painted on the wall: vanish at it
             p.pose("run", t);
           }
         } else {
           p.root.visible = true;
           const k = smooth(seg(t, 12 + i * 0.15, 14.5 + i * 0.15));
-          p.travel((i - 2.5) * 0.6, IZ + 4.5, ix, IZ + iz, k);
+          p.travel(ix * 1.8, IZ + 3.6, ix, IZ + iz, k); // separate lanes
           if (k < 1) p.pose("run", t);
           else {
             p.face(0, IZ - 2.4);
@@ -151,14 +158,14 @@ const scene: SceneDef = {
             runner.pose("cheer", t, 1);
           }
         } else {
-          runner.travel(3.5, 1.5, 0.3, -6, go);
+          runner.travel(3.5, 1.5, 0.3, -5.4, go);
           runner.pose("run", t);
-          runner.root.visible = go < 0.98;
+          runner.root.visible = go < 0.97;
         }
       } else {
-        runner.root.visible = true;
+        runner.root.visible = t > 13.2; // waits out of shot instead of in the crowd's lane
         const k = smooth(seg(t, 13.2, 15.3));
-        runner.travel(0.4, IZ + 4.5, 0.7, IZ + 0.4, k);
+        runner.travel(-2.2, IZ + 3.6, -2.6, IZ + 0.9, k); // stands off to the side, clear of the fan and the camera
         if (k < 1) runner.pose("run", t);
         else {
           runner.face(0, IZ - 2.4);
@@ -212,12 +219,13 @@ const scene: SceneDef = {
       { t: 12, pos: [0, 2.5, 4], look: [0, 1.5, -6] },
       { t: 12.01, pos: [0, 2.2, IZ + 3.9], look: [0, 1, IZ - 2] },
       { t: 15, pos: [0, 2.0, IZ + 2.5], look: [0, 0.9, IZ - 2.4] },
+      { t: 15.9, pos: [0, 2.5, IZ - 0.5], look: [0, 0.9, IZ - 2.4] }, // over their heads, through the gap
       { t: 16.5, pos: [-0.1, 1.05, IZ - 1.3], look: [0, 0.82, IZ - 2.4], fov: 40 },
       { t: 20, pos: [-0.05, 0.98, IZ - 1.55], look: [0, 0.82, IZ - 2.4], fov: 38 },
-      { t: 21, pos: [1.3, 1.1, IZ - 3.2], look: [0, 1.2, IZ - 0.5], fov: 55 },
-      { t: 23.5, pos: [1.4, 1.5, IZ - 3.4], look: [0, 0.5, IZ - 0.5], fov: 55 },
-      { t: 24.5, pos: [3.4, 1.8, IZ + 2.5], look: [0.4, 1.0, IZ - 0.5] },
-      { t: 28.5, pos: [2.8, 1.7, IZ + 2.0], look: [0.4, 0.8, IZ - 0.5] },
+      { t: 21, pos: [0.6, 1.1, IZ - 3.0], look: [0, 1.2, IZ - 0.5], fov: 55 },
+      { t: 23.5, pos: [0.7, 1.5, IZ - 3.1], look: [0, 0.5, IZ - 0.5], fov: 55 },
+      { t: 24.5, pos: [3.4, 1.8, IZ + 2.5], look: [-0.8, 1.0, IZ - 0.2] },
+      { t: 28.5, pos: [2.8, 1.7, IZ + 2.0], look: [-0.8, 0.8, IZ - 0.2] },
       { t: 30, pos: [0, 3.7, IZ + 1.2], look: [0, 0.3, IZ - 1.2] },
       { t: 36, pos: [0.3, 3.75, IZ + 0.4], look: [0, 0.3, IZ - 1.6] },
     ]);

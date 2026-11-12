@@ -46,12 +46,30 @@ const scene: SceneDef = {
     scene.add(ground);
     const r = rng(2802);
 
+    // Scavenger routes (start -> hiding spot -> seat by the kaiju) and the
+    // kaiju's own lane: the junk is kept off these so nobody walks through it.
+    const start: [number, number][] = [[-3.5, 6], [-1.2, 7.5], [1.5, 6.5], [3.6, 7.2], [0.2, 9]];
+    const end: [number, number][] = [[-3.6, -5.2], [-2.2, -4.4], [2.2, -4.4], [3.6, -5.2], [0, -3.8]];
+    const hide = start.map(([x, z]): [number, number] => [x * 1.6, z + 7]);
+    const lanes: [number, number, number, number, number][] = [[0, 1, 0, -12, 2.6]]; // x0,z0,x1,z1,half-width
+    start.forEach((s, i) => lanes.push([...s, ...hide[i], 0.7], [...hide[i], ...end[i], 0.7]));
+    const clearOf = (x: number, z: number, rad: number) =>
+      lanes.every(([x0, z0, x1, z1, w]) => {
+        const dx = x1 - x0, dz = z1 - z0;
+        const k = Math.max(0, Math.min(1, ((x - x0) * dx + (z - z0) * dz) / (dx * dx + dz * dz)));
+        return Math.hypot(x - x0 - dx * k, z - z0 - dz * k) > rad + w;
+      });
     // Landfill: mounds of junk and expired cards
     for (let i = 0; i < 14; i++) {
-      const m = mesh(new THREE.ConeGeometry(r.range(1.5, 3), r.range(1, 2.4), 6), mat(r.pick([0x5c5040, 0x6b5e4a, 0x7a6a50])));
-      const a = r.range(0, Math.PI * 2), d = r.range(6, 15);
-      m.position.set(Math.cos(a) * d, 0.3, Math.sin(a) * d * 0.6 + 4);
-      scene.add(m);
+      const rad = r.range(1.5, 3), h = r.range(1, 2.4);
+      const m = mesh(new THREE.ConeGeometry(rad, h, 6), mat(r.pick([0x5c5040, 0x6b5e4a, 0x7a6a50])));
+      const foot = rad * Math.min(1, 0.5 + 0.3 / h); // radius where the cone meets the ground
+      for (let tries = 0; tries < 40; tries++) {
+        const a = r.range(0, Math.PI * 2), d = r.range(6, 15);
+        m.position.set(Math.cos(a) * d, 0.3, Math.sin(a) * d * 0.6 + 4);
+        if (clearOf(m.position.x, m.position.z, foot)) break;
+      }
+      if (clearOf(m.position.x, m.position.z, foot)) scene.add(m);
     }
     for (let i = 0; i < 40; i++) {
       const c = card(r.pick(CARD_COLORS));
@@ -62,7 +80,10 @@ const scene: SceneDef = {
     }
     for (let i = 0; i < 6; i++) {
       const b = cardboardBox(r.range(0.5, 0.9), r.range(0.4, 0.7), 0.6);
-      b.position.set(r.range(-7, 7), 0, r.range(2, 11));
+      for (let tries = 0; tries < 40; tries++) {
+        b.position.set(r.range(-7, 7), 0, r.range(2, 11));
+        if (clearOf(b.position.x, b.position.z, 0.6)) break;
+      }
       b.rotation.y = r.range(0, 2);
       scene.add(b);
     }
@@ -140,8 +161,6 @@ const scene: SceneDef = {
 
     // Scavengers
     const N = 5;
-    const start: [number, number][] = [[-3.5, 6], [-1.2, 7.5], [1.5, 6.5], [3.6, 7.2], [0.2, 9]];
-    const end: [number, number][] = [[-3.6, -5.2], [-2.2, -4.4], [2.2, -4.4], [3.6, -5.2], [0, -3.8]];
     const players = Array.from({ length: N }, (_, i) => {
       const p = new Player({ hairStyle: (["cap", "twin", "spiky", "long", "short"] as const)[i], accessories: i % 2 ? ["backpack", "goggles"] : ["gloves"] }, 2810 + i);
       scene.add(p.root);
@@ -199,10 +218,15 @@ const scene: SceneDef = {
         cab.group.rotation.set(0, 0, 0);
       } else {
         cab.group.visible = true;
-        arms[1].hand.getWorldPosition(tmp);
-        cab.group.position.set(tmp.x, tmp.y - 0.4, tmp.z + (t > 24.5 ? 0.6 : 0));
-        cab.group.rotation.set(0, kaiju.rotation.y, 0);
-        if (sit > 0.6) cab.group.position.y = Math.max(cab.group.position.y, 0);
+        // gripped by its side: the fist (arm-local y≈-3.94, 0.7 half-width) hugs
+        // the cabinet's outer flank about halfway up, and the cabinet stays upright
+        const arm = arms[1].arm;
+        arm.updateWorldMatrix(true, false);
+        tmp.set(0, -3.94, 0);
+        arm.localToWorld(tmp);
+        const ry = kaiju.rotation.y, side = 0.7 + 0.62;
+        cab.group.position.set(tmp.x - Math.cos(ry) * side, Math.max(0, tmp.y - 1.3), tmp.z + Math.sin(ry) * side);
+        cab.group.rotation.set(0, ry, 0);
       }
       cab.setScreen(t > 25.8 ? "error" : "off");
 
@@ -221,7 +245,7 @@ const scene: SceneDef = {
           p.head.rotation.x = -0.4 * rise;
         } else if (t < 31) {
           const k = smooth(seg(t, 11.2 + i * 0.1, 15 + i * 0.1));
-          const hx = sx * 1.6, hz = sz + 7;
+          const [hx, hz] = hide[i];
           p.travel(sx, sz, hx, hz, k);
           if (k < 1) p.pose("run", t);
           else {
@@ -231,7 +255,7 @@ const scene: SceneDef = {
           }
         } else {
           const k = smooth(seg(t, 31 + i * 0.3, 36 + i * 0.3));
-          p.travel(sx * 1.6, sz + 7, ex, ez, k);
+          p.travel(hide[i][0], hide[i][1], ex, ez, k);
           if (k < 1) p.pose("walk", t);
           else {
             p.face(0, KZ + 1);

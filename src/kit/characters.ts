@@ -299,12 +299,12 @@ export class Player {
           const c = (s(tt * 2.2) + 1) / 2;
           torso.rotation.x = c * 1.2;
           armL.rotation.x = armR.rotation.x = -2.8 + c * 0.8;
-          armL.rotation.z = -0.3;
-          armR.rotation.z = 0.3;
+          armL.rotation.z = 0.3; // raised arms splay outward, clear of the head
+          armR.rotation.z = -0.3;
         } else {
           armL.rotation.x = armR.rotation.x = -2.6 + s(tt * 3) * 0.3;
-          armL.rotation.z = -0.4;
-          armR.rotation.z = 0.4;
+          armL.rotation.z = 0.4;
+          armR.rotation.z = -0.4;
           head.rotation.x = -0.3;
           torso.rotation.z = s(tt * 1.5) * 0.08;
         }

@@ -59,12 +59,6 @@ const scene: SceneDef = {
       return c;
     });
     const QX = cabs[2].group.position.x; // the chosen cabinet
-    for (let i = 0; i < 5; i++) {
-      const b = cardboardBox(r.range(0.4, 0.7), r.range(0.3, 0.5), 0.5);
-      b.position.set(r.range(-6, 6), 0, r.range(1.5, 4.5));
-      b.rotation.y = r.range(0, 2);
-      scene.add(b);
-    }
     for (let i = 0; i < 12; i++) {
       const c = card();
       c.position.set(r.range(-5, 5), 0.01, r.range(-3, 4));
@@ -101,15 +95,54 @@ const scene: SceneDef = {
 
     // Players: asleep around the room, later a queue in front of cabinet #3
     const N = 8;
-    const sleepSpots: [number, number, number][] = Array.from({ length: N }, (_, i) => [r.range(-5.5, 5.5), r.range(-2.4, 3.8), r.range(0, Math.PI * 2)]);
+    const qz = (i: number) => -2.85 + i * 0.95;
+    const qx = (i: number) => QX + (i % 2 ? 0.22 : -0.22);
+    // sleepers keep their distance from each other: odd ones lie down (body ~1.8 m
+    // behind the feet, arms flopped out), even ones sit with their legs forward
+    const sleepBody = (i: number, [x, z, ry]: [number, number, number]): [number, number, number] =>
+      i % 2 ? [x - Math.sin(ry) * 0.85, z - Math.cos(ry) * 0.85, 1.0] : [x + Math.sin(ry) * 0.25, z + Math.cos(ry) * 0.25, 0.6];
+    const sleepSpots: [number, number, number][] = [];
+    for (let i = 0; i < N; i++) {
+      let spot: [number, number, number] = [0, 0, 0];
+      for (let tries = 0; tries < 60; tries++) {
+        spot = [r.range(-5.5, 5.5), r.range(-2.4, 3.8), r.range(0, Math.PI * 2)];
+        const [cx, cz, cr] = sleepBody(i, spot);
+        // nobody sleeps where the queue will form
+        if (Math.abs(spot[0] - QX) < 1.5 || Math.abs(cx - QX) < cr + 0.5) continue;
+        if (sleepSpots.every((o, j) => {
+          const [ox, oz, or] = sleepBody(j, o);
+          return Math.hypot(cx - ox, cz - oz) > cr + or + 0.1;
+        })) break;
+      }
+      sleepSpots.push(spot);
+    }
+    // boxes stay off the queue (and where it falls over), the sleepers and their run to it
+    const segDist = (x: number, z: number, x0: number, z0: number, x1: number, z1: number) => {
+      const dx = x1 - x0, dz = z1 - z0;
+      const k = Math.max(0, Math.min(1, ((x - x0) * dx + (z - z0) * dz) / (dx * dx + dz * dz || 1)));
+      return Math.hypot(x - x0 - dx * k, z - z0 - dz * k);
+    };
+    // runners come up beside the queue on their own side and step into place,
+    // instead of cutting straight through people already standing in it
+    const side = (i: number) => (sleepSpots[i][0] >= QX ? 1 : -1);
+    const wpx = (i: number) => QX + side(i) * 1.0;
+    const boxOk = (x: number, z: number) =>
+      Math.abs(x - QX) > 2.6 &&
+      sleepSpots.every(([sx, sz], i) => Math.hypot(x - sx, z - sz) > 2.1 && segDist(x, z, sx, sz, wpx(i), qz(i)) > 0.9);
+    for (let i = 0; i < 5; i++) {
+      const b = cardboardBox(r.range(0.4, 0.7), r.range(0.3, 0.5), 0.5);
+      for (let tries = 0; tries < 60; tries++) {
+        b.position.set(r.range(-6, 6), 0, r.range(1.5, 4.5));
+        if (boxOk(b.position.x, b.position.z)) break;
+      }
+      b.rotation.y = r.range(0, 2);
+      if (boxOk(b.position.x, b.position.z)) scene.add(b);
+    }
     const players = Array.from({ length: N }, (_, i) => {
       const p = new Player({ hairStyle: (["twin", "cap", "spiky", "long", "short", "bun", "mohawk", "short"] as const)[i], accessories: i % 3 === 0 ? ["gloves"] : i % 3 === 1 ? ["backpack"] : ["towel", "glasses"] }, 3010 + i);
       scene.add(p.root);
       return p;
     });
-    const qz = (i: number) => -2.85 + i * 0.95;
-    const qx = (i: number) => QX + (i % 2 ? 0.22 : -0.22);
-
     const tbc = tbcCard();
     scene.add(tbc);
 
@@ -159,11 +192,16 @@ const scene: SceneDef = {
           p.face(QX, -4.1);
           p.pose("cheer", t, 1);
         } else if (k < 1) {
-          p.travel(sx, sz, qx(i), qz(i), k);
+          const l1 = Math.hypot(wpx(i) - sx, qz(i) - sz), l2 = Math.abs(wpx(i) - qx(i));
+          const k1 = l1 / (l1 + l2);
+          if (k < k1) p.travel(sx, sz, wpx(i), qz(i), k / k1);
+          else p.travel(wpx(i), qz(i), qx(i), qz(i), (k - k1) / (1 - k1));
           p.pose("run", t);
         } else {
           p.root.position.set(qx(i), 0, qz(i));
-          p.root.rotation.y = Math.PI;
+          // on the shock, everyone half-turns away from the line, so the
+          // dominoes land in a herringbone instead of on top of each other
+          p.root.rotation.y = Math.PI + (i % 2 ? 1 : -1) * 0.75 * smooth(seg(t, 21.7, 22.6));
           if (t < 21.5) {
             p.pose(i === 0 && t > 20 ? "reach" : "idle", t, 1);
             if (i > 0) p.body.position.y = Math.abs(Math.sin(t * 5 + i)) * 0.06; // bouncing with excitement

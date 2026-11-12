@@ -136,10 +136,16 @@ const scene: SceneDef = {
         } else p.pose(leader ? "fight" : i % 2 ? "stop" : "idle", t * (leader ? 0.25 : 1));
         if (leader) p.body.position.y = 0;
         // the defectors: one from each tribe walks over to stand behind the tumbleweed
-        if (!leader && i % 4 === 1 && t > 34) {
-          const dk = smooth(seg(t, 34 + tribe * 0.4, 37 + tribe * 0.4));
-          const tx = (tribe - 1) * 0.9, tz = -0.5;
-          p.travel(home[0], home[1], tx, tz, dk);
+        if (!leader && i % 4 === 1 && t > 34 + tribe * 0.4) {
+          // route around the tribe's leader via a waypoint, and keep the front
+          // (Sliders) defector to the side so it doesn't wade through the tumbleweed
+          const t0 = 34 + tribe * 0.4;
+          const k1 = seg(t, t0, t0 + 1.1), k2 = seg(t, t0 + 1.1, t0 + 3);
+          const [wx, wz] = at(tr.ang - 0.45, 3.4);
+          const tx = [0, -0.9, 0.9][tribe], tz = -0.5;
+          if (k2 <= 0) p.travel(home[0], home[1], wx, wz, k1);
+          else p.travel(wx, wz, tx, tz, k2);
+          const dk = k2;
           if (dk < 1) p.pose("walk", t);
           else {
             p.root.rotation.y = 0;

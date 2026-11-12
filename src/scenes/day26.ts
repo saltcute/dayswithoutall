@@ -113,7 +113,9 @@ const scene: SceneDef = {
 
     // Historians
     const H = 5;
-    const spots: [number, number][] = [[-1.2, 1.5], [1.4, 1.2], [-2.0, 0.2], [2.1, 0.3], [-0.4, -1.7]];
+    const spots: [number, number][] = [[-1.2, 1.5], [1.4, 1.2], [-2.0, 0.2], [2.3, 0.6], [-0.4, -1.7]];
+    // arrival order chosen so the staggered procession never walks through itself
+    const order = [0, 2, 3, 1, 4];
     const historians = Array.from({ length: H }, (_, i) => {
       const p = new Player({ shirt: [0x6b5844, 0x4a4e69, 0x5c4033, 0x3d405b, 0x7f5539][i], pants: 0x2b2b2b, hairStyle: i === 4 ? "bun" : "short", hair: 0x777777, accessories: i === 1 ? ["glasses", "beard"] : ["glasses"] }, 2620 + i);
       const kind = i % 3;
@@ -151,7 +153,7 @@ const scene: SceneDef = {
     ctx.update((t) => {
       historians.forEach(({ p, onHead, inHand }, i) => {
         const [x, z] = spots[i];
-        const k = smooth(seg(t, i * 0.3, 4.5 + i * 0.3));
+        const k = smooth(seg(t, order[i] * 0.3, 4.5 + order[i] * 0.3));
         p.travel(x - 5.5, z + 3, x, z, k);
         const hatsOff = t > 24.8 && t < 30.5;
         onHead.visible = !hatsOff;
@@ -244,7 +246,7 @@ const scene: SceneDef = {
       { t: 6.5, pos: [-0.9, 1.9, 3.6], look: [-1.2, 2.2, 1.5], fov: 45 },
       { t: 10.5, pos: [-0.6, 1.9, 3.3], look: [-1.1, 2.1, 1.5], fov: 40 },
       { t: 12, pos: [0.2, 1.5, 2.5], look: [-1.2, 0.9, 0.6], fov: 45 },
-      { t: 15, pos: [1.5, 1.2, 2.4], look: [0, 0.3, 0] },
+      { t: 15, pos: [0.1, 2.0, 3.3], look: [0, 0.3, 0] },
       { t: 19, pos: [2.4, 4.4, 4.6], look: [0, 0, 0] },
       { t: 23, pos: [0, 2.2, 4.5], look: [0, 0.8, -0.5] },
       { t: 25, pos: [0, 4.5, 6.5], look: [0, 0.8, 0] },

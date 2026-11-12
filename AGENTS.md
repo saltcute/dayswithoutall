@@ -3,7 +3,7 @@
 Project-wide instructions for anyone (human or AI agent) working in this repo.
 
 ## What this is
-This is a parody website that counts the days ALL.Net (the online server behind the SEGA arcade rhythm games maimai, CHUNITHM and ONGEKI) has been down. Each day lives on its own subdomain: `one.dayswithoutall.net`, `two.…`, `twentyone.…`. Every day plays a short, looping **low-poly 3D scene with sound**: a dramatized, sarcastic, post-apocalyptic take on how the players (and "the world") cope with the ALL.Netpocalypse.
+This is a parody website that counts the days ALL.Net (the online server behind the SEGA arcade rhythm games maimai, CHUNITHM and ONGEKI) has been down. Each day lives on its own subdomain: `one.dayswithoutall.net`, `two.…`, `twentyone.…`. Every day plays a short **low-poly 3D scene with sound**: a dramatized, sarcastic, post-apocalyptic take on how the players (and "the world") cope with the ALL.Netpocalypse.
 
 **Tone:** deadpan nature-documentary narration over an absurd apocalypse. Keep it affectionate toward the player community and never mean-spirited. No gore, slurs or real people.
 
@@ -25,6 +25,12 @@ tests/             vitest unit tests for shared/
 scripts/screenshots.mjs  Playwright: headless render of scenes into ./shots for visual review
 ```
 
+### Playback (src/main.ts)
+- The page shows the start screen, then autoplays the scene after 2 s (`AUTOPLAY_DELAY_MS`). Clicking the button starts it immediately.
+- Browsers block audio until a user gesture, so autoplay starts muted with a "Click anywhere for sound" hint. The first click or keypress anywhere unlocks the sound.
+- The scene plays once (`stage.loop = false`). When it ends, the start screen returns with a "↻ REPLAY" button and audio is suspended.
+- Test scripts set `window.__noAutoplay = true` to keep the start screen up.
+
 ### Routing rules (worker/index.ts)
 - `OUTAGE_START` (wrangler var, default `2026-11-04T00:00:00+09:00`) is the start of Day 1. The day count changes at 00:00 JST.
 - The apex domain, `www.`, unknown labels and future days get a **302** to today's subdomain (`no-store`).
@@ -39,12 +45,12 @@ Create `src/scenes/dayNN.ts` (two-digit zero-padded, e.g. `day07.ts`). The regis
 ```ts
 import type { SceneDef } from "../engine/stage";
 const scene: SceneDef = {
-  duration: 36,               // seconds; the scene loops
+  duration: 36,               // seconds; the scene plays once
   build(ctx) {
     // 1. world: setupWorld(ctx, {...}) + an environment from kit/environments
     // 2. actors/props: new Player(opts, seed), cabinet(kind), props…  -> ctx.scene.add(...)
     // 3. ctx.update((t, dt) => { ... })   pose/move everything as a pure function of t
-    // 4. ctx.at(time, () => ctx.sfx.xxx()) sound cues (fire once per loop)
+    // 4. ctx.at(time, () => ctx.sfx.xxx()) sound cues (fire once per playthrough)
     // 5. ctx.caption(time, "Narration…", dur)
     // 6. ctx.cameraPath([{ t, pos, look, fov? }, ...]); ctx.shake(); ctx.flash()
   },
@@ -53,7 +59,7 @@ export default scene;
 ```
 
 Rules:
-- **Animate as a function of `t`** (seconds into the loop) using `seg`, `smooth`, `keys` and `bump` from `engine/math`. This keeps loops seamless and `stage.seek()` deterministic. Only particles may use `dt`. Use `ctx.onLoop` to reset any state.
+- **Animate as a function of `t`** (seconds since the scene started) using `seg`, `smooth`, `keys` and `bump` from `engine/math`. This keeps replays identical and `stage.seek()` deterministic. Only particles may use `dt`. Use `ctx.onLoop` to reset any state (it runs on every start and replay).
 - Use the seeded `rng(seed)`, never `Math.random()`, for layout, so every visitor sees the same scene. Random jitter inside poses or sounds is fine.
 - `Player.pose(name, t, k)` resets all joints and then applies the pose. Call it every frame and apply small tweaks after it.
 - Characters face **+Z**. Cabinets face +Z with their origin at the floor center. Use `player.face(x, z)` and `player.travel(...)`.

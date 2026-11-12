@@ -9,9 +9,20 @@ console.log("apex ->", p.url());
 await p.goto("http://one.localhost:8799/");
 await p.waitForFunction(() => window.__ready);
 console.log("day1 prev?", await p.$(".nav .prev") !== null, "next href:", await p.getAttribute(".nav .next", "href"));
+// autoplay: starts by itself ~2 s after load, silently (no gesture yet)
+await p.waitForTimeout(3000);
+console.log("autoplayed:", await p.evaluate(() => window.__stage.playing && window.__stage.t > 0),
+  "overlay hidden:", await p.evaluate(() => document.querySelector(".overlay").classList.contains("hide")),
+  "sound hint shown:", await p.isVisible(".sound-hint"));
+// jump to the end -> start screen returns with REPLAY
+await p.evaluate(() => { const s = window.__stage; s.t = s["duration"] - 0.05; });
+await p.waitForFunction(() => !window.__stage.playing);
+console.log("ended -> overlay shown:", await p.evaluate(() => !document.querySelector(".overlay").classList.contains("hide")),
+  "button:", (await p.textContent(".overlay .start")).trim());
 await p.click(".overlay .start");
-await p.waitForTimeout(1500);
-console.log("audio ctx:", await p.evaluate(() => window.__stage.sfx.ctx?.state), "t>0:", await p.evaluate(() => window.__stage.t > 0));
+await p.waitForTimeout(800);
+console.log("replay -> playing:", await p.evaluate(() => window.__stage.playing), "audio:", await p.evaluate(() => window.__stage.sfx.ctx?.state),
+  "hint hidden:", !(await p.isVisible(".sound-hint")));
 await p.click(".nav .next"); await p.waitForFunction(() => window.__ready);
 console.log("after next ->", p.url(), "title:", await p.title());
 await p.keyboard.press("ArrowLeft"); await p.waitForFunction(() => window.__ready);

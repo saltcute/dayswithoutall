@@ -19,6 +19,7 @@ mkdirSync("shots", { recursive: true });
 const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 page.setDefaultTimeout(120_000); // software WebGL is slow on loaded machines
+await page.addInitScript(() => { window.__noAutoplay = true; });
 let failures = 0;
 for (const day of days) {
   const errors = [];

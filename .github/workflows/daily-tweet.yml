@@ -1,0 +1,39 @@
+name: daily-tweet
+
+on:
+  schedule:
+    # 15:02 UTC = 00:02 JST, just after the day rolls over. GitHub may start it late.
+    - cron: "2 15 * * *"
+  workflow_dispatch:
+    inputs:
+      day:
+        description: "Day number to post (blank = today in JST)"
+        required: false
+      dry_run:
+        description: "Print only, don't post"
+        type: boolean
+        default: false
+
+concurrency:
+  group: daily-tweet
+  cancel-in-progress: false
+
+jobs:
+  tweet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Rename account and post
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.day }}" ]; then ARGS="$ARGS --day ${{ inputs.day }}"; fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          node scripts/tweet.mjs $ARGS

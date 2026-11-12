@@ -53,12 +53,16 @@ export default {
     const now = env.DEV_NOW ? new Date(env.DEV_NOW) : new Date();
     const today = currentDay(now, env.OUTAGE_START || DEFAULT_OUTAGE_START);
 
-    const split = splitHost(url.hostname, base);
+    // Use the Host header: `wrangler dev` rewrites request.url to the route's zone.
+    const hostHeader = (request.headers.get("host") ?? url.host).toLowerCase();
+    const [hostname, hostPort] = hostHeader.split(":");
+    const split = splitHost(hostname, base);
     if (!split) return new Response("Unknown host", { status: 404 });
 
-    const port = url.port ? `:${url.port}` : "";
-    const hostFor = (n: number) => `${toWords(n)}.${split.suffix}${port}`;
-    const urlFor = (n: number) => `${url.protocol}//${hostFor(n)}/`;
+    const isLocal = split.suffix === "localhost";
+    const port = hostPort ? `:${hostPort}` : "";
+    const scheme = isLocal ? "http:" : "https:";
+    const urlFor = (n: number) => `${scheme}//${toWords(n)}.${split.suffix}${port}/`;
 
     const day = split.label ? parseWords(split.label) : null;
     if (day === null || day > today) return redirect(urlFor(today), 302);

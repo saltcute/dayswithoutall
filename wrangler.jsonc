@@ -17,5 +17,16 @@
     { "pattern": "dayswithoutall.net/*", "zone_name": "dayswithoutall.net" },
     { "pattern": "*.dayswithoutall.net/*", "zone_name": "dayswithoutall.net" }
   ],
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  "env": {
+    // `wrangler dev --env local`: no routes, so the Host header is passed through
+    // untouched and http://seven.localhost:8799/ style URLs work.
+    "local": {
+      "routes": [],
+      "vars": {
+        "OUTAGE_START": "2026-11-12T00:00:00+09:00",
+        "BASE_DOMAIN": "dayswithoutall.net"
+      }
+    }
+  }
 }

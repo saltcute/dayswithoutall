@@ -1,6 +1,11 @@
 import { currentDay, DEFAULT_OUTAGE_START } from "../shared/dayCalc";
 import { parseWords, toWords } from "../shared/numberWords";
+import { type Dict, type Locale, negotiate, parseAcceptLanguage, readCookie, translate } from "../shared/i18n";
 import { metaFor } from "../shared/sceneMeta";
+import ja from "../src/i18n/locales/ja.json";
+import zhHans from "../src/i18n/locales/zh-Hans.json";
+
+const DICTS: Record<Locale, Dict> = { en: {}, "zh-Hans": zhHans as Dict, ja: ja as Dict };
 
 export interface Env {
   ASSETS: Fetcher;
@@ -62,34 +67,46 @@ export default {
     const isLocal = split.suffix === "localhost";
     const port = hostPort ? `:${hostPort}` : "";
     const scheme = isLocal ? "http:" : "https:";
+    // Keep an explicit ?lang= across redirects.
+    const langParam = url.searchParams.get("lang");
+    const keep = langParam ? `?lang=${encodeURIComponent(langParam)}` : "";
     const urlFor = (n: number) => `${scheme}//${toWords(n)}.${split.suffix}${port}/`;
+    const redirectTo = (n: number, status: 301 | 302) => redirect(urlFor(n) + keep, status);
 
     const day = split.label ? parseWords(split.label) : null;
-    if (day === null || day > today) return redirect(urlFor(today), 302);
-    if (split.label !== toWords(day)) return redirect(urlFor(day), 301);
-    if (url.pathname !== "/") return redirect(urlFor(day), 302);
+    if (day === null || day > today) return redirectTo(today, 302);
+    if (split.label !== toWords(day)) return redirectTo(day, 301);
+    if (url.pathname !== "/") return redirectTo(day, 302);
+
+    const locale = negotiate([langParam, readCookie(request.headers.get("cookie"), "lang"), ...parseAcceptLanguage(request.headers.get("accept-language"))]);
+    const d = DICTS[locale];
 
     const shell = await env.ASSETS.fetch(new URL("/", request.url));
     if (!shell.ok) return shell;
     let html = await shell.text();
 
-    const meta = metaFor(day);
-    const title = `Day ${day} without ALL.Net: ${meta.title}`;
+    const raw = metaFor(day);
+    const meta = { title: translate(d, raw.title), subtitle: translate(d, raw.subtitle) };
+    const title = translate(d, "Day {n} without ALL.Net: {title}", { n: day, title: meta.title });
     const pageUrl = urlFor(day);
     const head = [
       `<meta name="description" content="${escapeHtml(meta.subtitle)}">`,
       `<meta property="og:title" content="${escapeHtml(title)}">`,
       `<meta property="og:description" content="${escapeHtml(meta.subtitle)}">`,
       `<meta property="og:type" content="website">`,
+      `<meta property="og:locale" content="${{ en: "en_US", "zh-Hans": "zh_CN", ja: "ja_JP" }[locale]}">`,
       `<meta property="og:url" content="${escapeHtml(pageUrl)}">`,
       `<meta name="twitter:card" content="summary">`,
       `<link rel="canonical" href="${escapeHtml(pageUrl)}">`,
-      `<script>window.__DAY__=${day};window.__TODAY__=${today};window.__HOST_SUFFIX__=${JSON.stringify(split.suffix + port)};</script>`,
+      `<script>window.__DAY__=${day};window.__TODAY__=${today};window.__HOST_SUFFIX__=${JSON.stringify(split.suffix + port)};window.__LANG__=${JSON.stringify(locale)};</script>`,
     ].join("\n    ");
-    html = html.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`).replace("</head>", `    ${head}\n  </head>`);
+    html = html
+      .replace(/<html lang="[^"]*">/, `<html lang="${locale}">`)
+      .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
+      .replace("</head>", `    ${head}\n  </head>`);
 
     return new Response(html, {
-      headers: { "Content-Type": "text/html; charset=utf-8", ...NO_STORE },
+      headers: { "Content-Type": "text/html; charset=utf-8", "Content-Language": locale, Vary: "Accept-Language, Cookie", ...NO_STORE },
     });
   },
 } satisfies ExportedHandler<Env>;

@@ -163,6 +163,12 @@ export class Player {
     }
 
     if (o.scale) this.root.scale.setScalar(o.scale);
+    // tag body parts so tooling (scripts/audit.mjs) can tell them apart from held props
+    this.root.userData.player = seed;
+    this.root.traverse((m) => (m.userData.part = true));
+    for (const [g, n] of [[this.hips, "hips"], [this.torso, "torso"], [this.head, "head"], [this.armL, "armL"], [this.armR, "armR"], [this.legL, "legL"], [this.legR, "legR"]] as const) g.name = n;
+    this.handR.userData.hand = "R";
+    this.handL.userData.hand = "L";
   }
 
   at(x: number, z: number, rotY = 0) {
@@ -349,11 +355,12 @@ export class Player {
         const p = name === "lie" ? 1 : k;
         body.rotation.x = -p * Math.PI / 2;
         body.position.y = p * 0.15;
-        armL.rotation.z = -p * 1.2;
-        armR.rotation.z = p * 1.2;
+        // arms flop out to the sides (positive z swings the left arm outward)
+        armL.rotation.z = p * 1.2;
+        armR.rotation.z = -p * 1.2;
         legL.rotation.z = -p * 0.15;
         legR.rotation.z = p * 0.15;
-        head.rotation.x = -p * 0.2;
+        head.rotation.x = p * 0.25;
         break;
       }
       case "cheer": {
@@ -387,12 +394,12 @@ export class Player {
       case "crawl": {
         // body tipped forward; legs trail straight behind and drag
         body.rotation.x = Math.PI / 2 * 0.85;
-        body.position.y = 0.25;
+        body.position.y = 0.26;
         body.position.z = -0.1;
         legL.rotation.x = 0.1 + s(tt * 4) * 0.25;
         legR.rotation.x = 0.1 - s(tt * 4) * 0.25;
-        armL.rotation.x = -1.4 - s(tt * 4) * 0.4;
-        armR.rotation.x = -1.4 + s(tt * 4) * 0.4;
+        armL.rotation.x = -1.35 - s(tt * 4) * 0.3;
+        armR.rotation.x = -1.35 + s(tt * 4) * 0.3;
         head.rotation.x = -0.9;
         break;
       }

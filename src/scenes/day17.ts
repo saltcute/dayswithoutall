@@ -8,6 +8,7 @@ import { TextTexture } from "../engine/textTexture";
 import { Player } from "../kit/characters";
 import { card, CARD_COLORS, table } from "../kit/props";
 import { floor, setupWorld } from "../kit/environments";
+import { cjkFonts, trAuto } from "../i18n";
 
 const CRASH0 = 12, CRASH1 = 21;
 /** Price multiplier for the RARE CARD over time (deterministic wiggle). */
@@ -64,20 +65,26 @@ const scene: SceneDef = {
         c.fillStyle = "#14203f";
         c.fillRect(0, 0, w, 56);
         c.fillStyle = "#9fd0ff";
-        c.font = "800 36px 'Arial Black', Impact, sans-serif";
+        c.font = "800 36px 'Arial Black', Impact, " + cjkFonts() + ", sans-serif";
         c.textAlign = "center";
         c.textBaseline = "middle";
-        c.fillText("★ ARCADE CARD EXCHANGE ★", w / 2, 30);
+        c.fillText(trAuto("★ ARCADE CARD EXCHANGE ★"), w / 2, 30);
         // rows
         c.textAlign = "left";
-        c.font = "700 30px monospace";
+        c.font = "700 30px monospace, " + cjkFonts();
         const crashK = Math.pow(seg(t, CRASH0, CRASH1), 1.6);
         rows.forEach(([name, base, drop], i) => {
           const y = 96 + i * 52;
           const m = drop > 0 ? 1 - crashK * drop : 1 + crashK * -drop;
           const pct = (m * (1 + seg(t, 0, CRASH0) * 0.06) - 1) * 100;
           c.fillStyle = "#dfe6ff";
-          c.fillText(name, 20, y);
+          const label = trAuto(name);
+          for (let size = 30; size > 12; size -= 2) {
+            c.font = `700 ${size}px monospace, ${cjkFonts()}`;
+            if (c.measureText(label).width <= 220) break;
+          }
+          c.fillText(label, 20, y);
+          c.font = "700 30px monospace, " + cjkFonts();
           c.fillText("¥" + Math.max(1, Math.round(base * m)).toLocaleString("en-US"), 250, y);
           c.fillStyle = pct >= 0 ? "#33ff88" : "#ff3355";
           c.fillText((pct >= 0 ? "▲+" : "▼") + Math.abs(pct).toFixed(0) + "%", 400, y);
@@ -106,31 +113,31 @@ const scene: SceneDef = {
         });
         c.stroke();
         c.fillStyle = "#9fd0ff";
-        c.font = "700 22px monospace";
-        c.fillText("RARE CARD / ¥", cx0, cy0 + ch + 22);
+        c.font = "700 22px monospace, " + cjkFonts();
+        c.fillText(trAuto("RARE CARD / ¥"), cx0, cy0 + ch + 22);
         // banners
         c.textAlign = "center";
         if (t > 11 && t < CRASH1 && Math.sin(t * 8) > -0.3) {
           c.fillStyle = "#c1121f";
           c.fillRect(0, h - 88, w, 72);
           c.fillStyle = "#fff";
-          c.font = "800 40px 'Arial Black', Impact, sans-serif";
-          c.fillText("BULLETIN: SERVER STILL DOWN", w / 2, h - 52);
+          c.font = "800 40px 'Arial Black', Impact, " + cjkFonts() + ", sans-serif";
+          c.fillText(trAuto("BULLETIN: SERVER STILL DOWN"), w / 2, h - 52);
         }
         if (t > CRASH1 && t < 31.5) {
           c.fillStyle = "rgba(120,0,10,0.85)";
           c.fillRect(40, 130, w - 80, 220);
           c.fillStyle = Math.sin(t * 10) > 0 ? "#ffffff" : "#ffdd55";
-          c.font = "900 104px 'Arial Black', Impact, sans-serif";
-          c.fillText("RARE CARD -97%", w / 2, 240);
+          c.font = "900 104px 'Arial Black', Impact, " + cjkFonts() + ", sans-serif";
+          c.fillText(trAuto("RARE CARD -97%"), w / 2, 240);
         }
         if (t > 31.8) {
           c.fillStyle = "rgba(0,80,30,0.9)";
           c.fillRect(40, 130, w - 80, 220);
           c.fillStyle = "#ffffff";
-          c.font = "900 64px 'Arial Black', Impact, sans-serif";
-          c.fillText("SOLD: 1,200 CARDS", w / 2, 205);
-          c.fillText("TOTAL ¥1", w / 2, 285);
+          c.font = "900 64px 'Arial Black', Impact, " + cjkFonts() + ", sans-serif";
+          c.fillText(trAuto("SOLD: 1,200 CARDS"), w / 2, 205);
+          c.fillText(trAuto("TOTAL ¥1"), w / 2, 285);
         }
       });
     };

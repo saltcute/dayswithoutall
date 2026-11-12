@@ -4,6 +4,7 @@ import { box } from "../engine/materials";
 import { seg } from "../engine/math";
 import type { SceneDef } from "../engine/stage";
 import { textPlane } from "../engine/textTexture";
+import { tr } from "../i18n";
 import { Player } from "../kit/characters";
 import { cabinet } from "../kit/cabinets";
 import { desert, setupWorld } from "../kit/environments";
@@ -30,7 +31,8 @@ const scene: SceneDef = {
     // Billboard with the live count
     const board = new THREE.Group();
     board.add(box(0.2, 4, 0.2, 0x5c3a1e, -2.2, 2, 0), box(0.2, 4, 0.2, 0x5c3a1e, 2.2, 2, 0));
-    const face = textPlane(["DAYS WITHOUT", "ALL.NET", String(day)], 5.4, 3, { bg: "#f7f3e8", fg: "#c1121f", size: 70, border: "#1b1b1b", borderWidth: 10 });
+    // One phrase so each language can place the number naturally.
+    const face = textPlane(tr("DAYS WITHOUT\nALL.NET\n{n}", { n: day }).split("\n"), 5.4, 3, { bg: "#f7f3e8", fg: "#c1121f", size: 70, border: "#1b1b1b", borderWidth: 10 });
     face.position.y = 4.5;
     board.add(face);
     board.position.set(-7, 0, -10);

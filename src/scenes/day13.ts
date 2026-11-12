@@ -8,6 +8,7 @@ import { TextTexture } from "../engine/textTexture";
 import { Player } from "../kit/characters";
 import { cardboardBox, crate, table } from "../kit/props";
 import { floor, setupWorld } from "../kit/environments";
+import { cjkFonts, trAuto } from "../i18n";
 
 const scene: SceneDef = {
   duration: 37,
@@ -104,9 +105,10 @@ const scene: SceneDef = {
     scene.add(panel);
     const panelHome = new THREE.Vector3(CX, 1.55, CZ + 0.26 + 0.02);
     const drawScreen = (n: number) => {
-      const full = "ONLINE";
-      const shown = full.slice(0, Math.min(6, n));
-      const sub = n > 6 ? "(trust me)".slice(0, n - 6) : "";
+      const full = trAuto("ONLINE");
+      const shown = full.slice(0, Math.min(full.length, Math.round((n / 6) * full.length)));
+      const subFull = trAuto("(trust me)");
+      const sub = n > 6 ? subFull.slice(0, Math.round(((n - 6) / 10) * subFull.length)) : "";
       scr.paint((c, w, h) => {
         c.fillStyle = "#c9a476";
         c.fillRect(0, 0, w, h);
@@ -122,10 +124,16 @@ const scene: SceneDef = {
         c.fillStyle = "#118833";
         c.textAlign = "center";
         c.textBaseline = "middle";
-        c.font = "bold 50px 'Comic Sans MS', 'Marker Felt', cursive";
+        const fitFont = (px: number, text: string, maxW: number) => {
+          for (let size = px; size > 12; size -= 2) {
+            c.font = `bold ${size}px 'Comic Sans MS', 'Marker Felt', ${cjkFonts()}, cursive`;
+            if (c.measureText(text).width <= maxW) return;
+          }
+        };
+        fitFont(50, full, 170); // size for the whole word so the typewriter doesn't jump
         c.fillText(shown, w / 2, h / 2 - 22);
         c.fillStyle = "#222";
-        c.font = "bold 26px 'Comic Sans MS', 'Marker Felt', cursive";
+        fitFont(26, subFull, 170);
         c.fillText(sub, w / 2, h / 2 + 30);
         if (n > 16) {
           c.font = "bold 22px 'Comic Sans MS', cursive";

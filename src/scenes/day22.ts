@@ -8,6 +8,7 @@ import { TextTexture, textPlane } from "../engine/textTexture";
 import { Player } from "../kit/characters";
 import { cave, setupWorld } from "../kit/environments";
 import { rock, torch } from "../kit/props";
+import { cjkFonts, trAuto } from "../i18n";
 
 const OCHRE = "#c8642a", CHAR = "#2a1a10", BONE = "#efe0bd";
 
@@ -131,12 +132,12 @@ const scene: SceneDef = {
     pSlide.position.set(0, 2.05, -5.98);
     const pRating = painting(2.4, 1.5, (c, W, H) => {
       c.fillStyle = BONE;
-      c.font = "900 64px 'Arial Black', sans-serif";
+      c.font = "900 64px 'Arial Black', " + cjkFonts() + ", sans-serif";
       c.textAlign = "center";
       c.fillText("15.00", W * 0.5, H * 0.38);
-      c.font = "700 26px serif";
+      c.font = "700 26px " + cjkFonts() + ", serif";
       c.fillStyle = OCHRE;
-      c.fillText("R A T I N G", W * 0.5, H * 0.1);
+      c.fillText(trAuto("R A T I N G"), W * 0.5, H * 0.1);
       c.strokeStyle = CHAR;
       for (let i = 0; i < 4; i++) stick(c, W * (0.18 + i * 0.21), H * 0.95, H * 0.45, i % 2 ? "bow" : "up");
       c.strokeStyle = BONE;

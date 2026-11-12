@@ -8,6 +8,7 @@ import { Player } from "../kit/characters";
 import { cabinet, type CabKind } from "../kit/cabinets";
 import { arcadeInterior, setupWorld } from "../kit/environments";
 import { card, cardboardBox } from "../kit/props";
+import { cjkFonts, trAuto } from "../i18n";
 
 function tbcCard() {
   const tt = new TextTexture(768, 160);
@@ -28,10 +29,10 @@ function tbcCard() {
     c.lineWidth = 6;
     c.stroke();
     c.fillStyle = "#f2d38a";
-    c.font = "italic 900 62px 'Arial Black', Impact, sans-serif";
+    c.font = "italic 900 62px 'Arial Black', Impact, " + cjkFonts() + ", sans-serif";
     c.textAlign = "left";
     c.textBaseline = "middle";
-    c.fillText("TO BE CONTINUED", 36, H / 2 + 2);
+    c.fillText(trAuto("TO BE CONTINUED"), 36, H / 2 + 2);
   });
   const m = new THREE.Mesh(
     new THREE.PlaneGeometry(0.96, 0.2),
@@ -78,9 +79,9 @@ const scene: SceneDef = {
       c.fillStyle = "#c1121f";
       c.fillRect(0, 0, W, 50);
       c.fillStyle = "#fff";
-      c.font = "900 32px sans-serif";
+      c.font = "900 32px " + cjkFonts() + ", sans-serif";
       c.textAlign = "center";
-      c.fillText("DAYS", W / 2, 36);
+      c.fillText(trAuto("DAYS"), W / 2, 36);
       c.strokeStyle = "#c1121f";
       c.lineWidth = 4;
       for (let i = 0; i < 30; i++) {

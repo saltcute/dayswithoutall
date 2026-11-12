@@ -64,6 +64,11 @@ export class Sfx {
     return !!this.ctx && this.ctx.state !== "closed";
   }
 
+  /** Pause all audio (ambient beds included) until the next unlock(). */
+  suspend() {
+    void this.ctx?.suspend();
+  }
+
   setMuted(m: boolean) {
     this.muted = m;
     if (this.ctx) this.master.gain.setTargetAtTime(m ? 0 : 0.8, this.ctx.currentTime, 0.05);

@@ -59,6 +59,9 @@ export class Stage {
   t = 0;
   loopCount = 0;
   playing = false;
+  /** Loop forever (true) or stop at the end and call onEnd (false). */
+  loop = false;
+  onEnd?: () => void;
   private duration = 30;
   private updaters: ((t: number, dt: number) => void)[] = [];
   private cues: { at: number; fn: () => void }[] = [];
@@ -125,6 +128,7 @@ export class Stage {
   }
 
   play() {
+    if (this.playing) return;
     this.playing = true;
     this.lastFrame = performance.now();
     const tick = (now: number) => {
@@ -141,6 +145,15 @@ export class Stage {
   advance(dt: number, draw = true) {
     const prev = this.t;
     let next = prev + dt;
+    if (next >= this.duration && !this.loop) {
+      // Play once: finish the last frame, then stop.
+      this.fireCues(prev, this.duration + 1);
+      this.t = this.duration - 1e-3;
+      this.renderFrame(dt, draw);
+      this.playing = false;
+      this.onEnd?.();
+      return;
+    }
     if (next >= this.duration) {
       this.fireCues(prev, this.duration + 1);
       next -= this.duration;

@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dayswithoutall",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "vars": {
+    // Day 1 begins at this instant. Days roll over at JST midnight.
+    "OUTAGE_START": "2026-11-12T00:00:00+09:00",
+    "BASE_DOMAIN": "dayswithoutall.net"
+  },
+  "routes": [
+    { "pattern": "dayswithoutall.net/*", "zone_name": "dayswithoutall.net" },
+    { "pattern": "*.dayswithoutall.net/*", "zone_name": "dayswithoutall.net" }
+  ],
+  "observability": { "enabled": true }
+}

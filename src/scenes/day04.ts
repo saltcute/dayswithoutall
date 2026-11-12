@@ -10,6 +10,21 @@ import { Player } from "../kit/characters";
 import { setupWorld, terrain } from "../kit/environments";
 import { candle, card, coin, coinPile, crate, sign, table, torch } from "../kit/props";
 
+const hL = new THREE.Vector3();
+const hR = new THREE.Vector3();
+/** Point between both hands (world space). */
+function between(p: Player, out: THREE.Vector3) {
+  p.root.updateMatrixWorld(true);
+  p.handL.getWorldPosition(hL);
+  p.handR.getWorldPosition(hR);
+  return out.addVectors(hL, hR).multiplyScalar(0.5);
+}
+/** Both arms forward, hands `z` radians inward, to carry something between the palms. */
+function holdArms(p: Player, z: number, x = -1.1) {
+  p.armL.rotation.set(x, 0, -z);
+  p.armR.rotation.set(x, 0, z);
+}
+
 const MX = 50; // market set offset
 
 /** A cup of instant noodles. */
@@ -37,15 +52,16 @@ const scene: SceneDef = {
     for (let i = 0; i < 5; i++) scene.add(box(6, 0.12, 0.2, 0x2e2620, 0, 2.74, -2.4 + i * 1.2)); // ceiling beams
     const pipe = box(0.12, 0.12, 6, 0x6b6b6b, 2.6, 2.4, 0);
     scene.add(pipe);
-    const desk = crate(0.7, 0x8a5a2b);
+    const desk = table(0.9, 0.7, 0x8a5a2b);
+    desk.scale.y = 0.7 / 0.78;
     desk.position.set(0, 0, -0.6);
     scene.add(desk);
     const cnd = candle();
-    cnd.position.set(-0.22, 0.7, -0.75);
+    cnd.position.set(-0.36, 0.7, -0.82);
     scene.add(cnd);
     const flame = cnd.children[1];
     const warm = new THREE.PointLight(0xffa040, 5, 6, 1.4);
-    warm.position.set(-0.22, 1.1, -0.4);
+    warm.position.set(-0.36, 1.1, -0.45);
     scene.add(warm);
 
     // the hoard: a pile, plus 24 counted coins that travel pile -> stacks
@@ -74,8 +90,8 @@ const scene: SceneDef = {
     roomie.at(-1.9, -2.0, 0.55);
     scene.add(roomie.root);
     const jar = mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.25, 8), mat(0xbde0fe, { opacity: 0.6 }));
-    jar.position.set(0, -0.1, 0.12);
-    roomie.handR.add(jar);
+    jar.position.set(0, 0.3, 0.6); // on her shins, between her hands
+    roomie.root.add(jar);
     const jarCoins = coinPile(6, 3, 0.05);
     jarCoins.position.y = -0.1;
     jar.add(jarCoins);
@@ -156,7 +172,7 @@ const scene: SceneDef = {
 
     // market people
     const merchant = new Player({ shirt: 0x5c3a1e, robe: 0x3d2b1f, hairStyle: "bald", accessories: ["hood", "mask"] }, 403);
-    merchant.at(MX, -2.2);
+    merchant.at(MX, -2.5);
     const buyer = new Player({ shirt: 0xff70a6, hairStyle: "twin", hair: 0x3b2a1a, accessories: ["gloves", "backpack"] }, 404);
     scene.add(merchant.root, buyer.root);
     const purse = coinPile(26, 11, 0.12);
@@ -182,7 +198,7 @@ const scene: SceneDef = {
     ctx.update((t) => {
       // ----- counting -----
       counter.pose("sit", t);
-      counter.hips.position.y = 0.5;
+      counter.hips.position.y = 0.55;
       counter.torso.rotation.x = 0.2;
       counter.head.rotation.x = 0.3 - bump(t, 11.4, 13) * 0.5;
       const sweep = seg(t, 11.3, 11.9);
@@ -208,22 +224,26 @@ const scene: SceneDef = {
       ledgerTT.draw(["COIN LEDGER", `count #1,204`, `${n} / 60`], { bg: "#f4ecd8", fg: "#2b2b2b", size: 34, font: "monospace" });
       flame.scale.y = 1 + Math.sin(t * 13) * 0.2;
       warm.intensity = 5 + Math.sin(t * 17) * 0.4 + Math.sin(t * 5.1) * 0.3 - bump(t, 11.4, 12.2) * 2.5;
-      roomie.pose("huddle", t, 1);
-      roomie.armR.rotation.x = -1.2;
-      roomie.armL.rotation.x = -1.2;
+      roomie.pose("sitFloor", t);
+      roomie.armR.rotation.set(-1.08, 0, 0.3);
+      roomie.armL.rotation.set(-1.08, 0, -0.3);
+      roomie.torso.rotation.x = 0.15 + Math.sin(t * 1.3) * 0.03;
       roomie.head.rotation.y = bump(t, 14, 17) * 0.8;
 
       // ----- market -----
       merchant.pose(t > 31 && t < 33.5 ? "point" : t > 21 && t < 27 ? "talk" : "idle", t);
-      merchant.at(MX, -2.2);
+      merchant.at(MX, -2.5);
       if (t > 31 && t < 33.5) merchant.armR.rotation.x = -2.6;
+      // walking time freezes while they stop to point at the fee sign
+      const wt = t < 31.2 ? t : t < 34 ? 31.2 : t - 2.8;
       shoppers.forEach((p, i) => {
-        const sp = 0.22 + i * 0.03;
-        const x = MX - 8 + (((t * sp * 4 + i * 3.7) % 16) + 16) % 16;
-        const z = 0.5 + (i % 3) * 0.45;
-        p.root.position.set(i % 2 ? x : 2 * MX - x, 0, z);
-        p.root.rotation.y = i % 2 ? Math.PI / 2 : -Math.PI / 2;
-        p.pose("walk", t);
+        const lane = i % 2; // lane 0 walks +x at z=0.75, lane 1 walks -x at z=1.6
+        const k = lane ? (i - 1) / 2 : i / 2; // slot within the lane
+        const n = lane ? 2 : 3;
+        const x = MX - 8 + (((wt * (lane ? 0.95 : 0.85) + k * 16 / n + lane * 5.5) % 16) + 16) % 16;
+        p.root.position.set(lane ? 2 * MX - x : x, 0, lane ? 1.6 : 0.75);
+        p.root.rotation.y = lane ? -Math.PI / 2 : Math.PI / 2;
+        p.pose("walk", wt);
         if (t > 31.2 && t < 34) {
           p.face(MX, -0.7);
           p.pose("point", t);
@@ -235,33 +255,36 @@ const scene: SceneDef = {
         buyer.travel(MX - 6, 2.5, MX - 0.1, -0.65, bw);
         if (bw < 1) buyer.pose("walk", t);
         else {
-          buyer.face(MX, -2.2);
-          if (t < 24.5) buyer.pose("talk", t);
-          else if (t < 27) buyer.pose("hold", t);
-          else if (t < 31) buyer.pose("hold", t);
-          else buyer.pose("sad", t);
+          buyer.face(MX, -2.5);
+          buyer.pose(t < 31 ? "talk" : "sad", t);
         }
+        // she carries the coins, then the cup, cupped in both hands
+        holdArms(buyer, t > 27 ? 0.22 : 0.17, t > 31 ? -0.85 : -1.1);
+        if (t > 24.5 && t < 31) buyer.head.rotation.set(0.2, 0, 0);
       } else {
         // retreats to a crate and eats it dry
         const ek = smooth(seg(t, 33, 34.5));
         buyer.travel(MX - 0.1, -0.65, MX + 2.2, 2.6, ek);
-        if (ek < 1) buyer.pose("walk", t);
-        else {
+        if (ek < 1) {
+          buyer.pose("walk", t);
+          holdArms(buyer, 0.22, -0.85);
+        } else {
           buyer.face(MX + 1.6, 5);
           buyer.pose("sitFloor", t);
-          buyer.armR.rotation.x = -2.0 - Math.max(0, Math.sin(t * 5)) * 0.4;
-          buyer.armL.rotation.x = -1.2;
-          buyer.head.rotation.x = 0.2 + Math.max(0, Math.sin(t * 5)) * 0.2;
+          // cup on the left hand, right hand shuttles dry noodles cup -> mouth
+          const bite = Math.max(0, Math.sin(t * 5));
+          buyer.armL.rotation.set(-1.28, 0, -0.34);
+          buyer.armR.rotation.set(lerp(-1.62, -2.2, bite), 0, lerp(0.52, 0.57, bite));
+          buyer.head.rotation.x = 0.15 - bite * 0.1;
         }
       }
       // purse goes from buyer's hands onto the counter
       const pay = smooth(seg(t, 24.6, 25.6));
-      buyer.root.updateMatrixWorld(true);
-      buyer.handR.getWorldPosition(v);
-      purseHold.position.set(lerp(v.x, MX - 0.05, pay), lerp(v.y - 0.05, 0.79, pay), lerp(v.z, -1.35, pay));
-      purseHold.visible = t > 18 && t < 36;
-      if (pay >= 1 && t > 26) purseHold.position.lerp(v.set(MX, 0.95, -2.1), smooth(seg(t, 26, 26.6)));
-      purseHold.visible = purseHold.visible && !(t > 26.6);
+      between(buyer, v);
+      purseHold.position.set(lerp(v.x, MX - 0.05, pay), lerp(v.y - 0.04, 0.79, pay) + hop(pay, 0.15), lerp(v.z, -1.35, pay));
+      // the merchant sweeps it to his side of the table
+      if (t > 26) purseHold.position.lerp(v.set(MX + 0.5, 0.79, -1.9), smooth(seg(t, 26, 26.6)));
+      purseHold.visible = t > 18 && t < 26.6;
       // gold card too ("and your rarest card")
       const cardK = smooth(seg(t, 25.8, 26.6));
       goldCard.visible = t > 25.3 && t < 27;
@@ -270,15 +293,14 @@ const scene: SceneDef = {
       const give = smooth(seg(t, 27, 28.2));
       cups[cups.length - 1].visible = t < 27;
       boughtCup.visible = t > 27;
-      if (t <= 33) {
-        boughtCup.position.set(lerp(MX + 0.11, MX - 0.1, give), lerp(0.78 + 0.34, 1.0, give) + hop(give, 0.2), lerp(-1.7, -0.25, give));
-        if (give >= 1) {
-          buyer.handR.getWorldPosition(v);
-          boughtCup.position.set(lerp(MX - 0.1, v.x + 0.15, 1), 1.02, -0.25);
-        }
+      if (t < 34.5) {
+        // from the top of the pyramid into her cupped hands
+        between(buyer, v);
+        boughtCup.position.set(lerp(MX + 0.11, v.x, give), lerp(0.78 + 0.34, v.y - 0.06, give) + hop(give, 0.2), lerp(-1.7, v.z, give));
       } else {
-        buyer.handR.getWorldPosition(v);
-        boughtCup.position.set(v.x, v.y - 0.08, v.z);
+        buyer.root.updateMatrixWorld(true);
+        buyer.handL.getWorldPosition(v);
+        boughtCup.position.set(v.x, v.y + 0.05, v.z);
       }
       boughtCup.lid.position.y = 0.165 + seg(t, 29.5, 30.2) * 0.06;
       boughtCup.lid.rotation.x = -seg(t, 29.5, 30.2) * 1.4;
@@ -332,8 +354,8 @@ const scene: SceneDef = {
       { t: 21, pos: [MX + 2.4, 1.8, 2.4], look: [MX, 1.1, -1.2], fov: 50 },
       { t: 23, pos: [MX + 2.5, 1.5, -0.4], look: [MX - 0.2, 1.05, -1.4], fov: 50 },
       { t: 28.6, pos: [MX + 2.3, 1.55, -0.2], look: [MX - 0.2, 1.05, -1.2], fov: 46 },
-      { t: 29.3, pos: [MX - 0.75, 1.75, 0.35], look: [MX - 0.1, 0.95, -0.3], fov: 42 },
-      { t: 30.6, pos: [MX - 0.75, 1.75, 0.35], look: [MX - 0.05, 1.0, -0.3], fov: 38 },
+      { t: 29.3, pos: [MX + 1.0, 2.0, -1.75], look: [MX - 0.1, 0.95, -1.1], fov: 40 },
+      { t: 30.6, pos: [MX + 0.95, 1.95, -1.7], look: [MX - 0.1, 0.98, -1.1], fov: 36 },
       { t: 31, pos: [MX - 0.2, 1.6, 2.6], look: [MX + 0.3, 1.6, -1.0], fov: 50 },
       { t: 34.5, pos: [MX + 1.7, 1.25, 4.5], look: [MX + 2.2, 0.75, 2.6], fov: 48 },
       { t: 40, pos: [MX + 0.8, 1.9, 6.2], look: [MX + 1.6, 0.8, 1.6], fov: 54 },

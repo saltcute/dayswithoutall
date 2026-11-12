@@ -18,7 +18,7 @@ const days = args.filter((a) => !a.startsWith("--")).flatMap((a) => {
   const [x, y] = a.split("-").map(Number);
   return y ? Array.from({ length: y - x + 1 }, (_, i) => x + i) : [x];
 });
-if (!days.length) for (let i = 1; i <= 30; i++) days.push(i);
+if (!days.length) for (let i = 1; i <= 31; i++) days.push(i); // 31 = the generic fallback scene
 
 const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
 const page = await browser.newPage({ viewport: { width: 320, height: 180 } });

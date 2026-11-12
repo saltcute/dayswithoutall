@@ -77,6 +77,7 @@ Rules:
 - Use the seeded `rng(seed)`, never `Math.random()`, for layout, so every visitor sees the same scene. Random jitter inside poses or sounds is fine.
 - `Player.pose(name, t, k)` resets all joints and then applies the pose. Call it every frame and apply small tweaks after it.
 - Characters face **+Z**. Cabinets face +Z with their origin at the floor center. Use `player.face(x, z)` and `player.travel(...)`.
+- **Held props:** parent them to `player.handR` / `handL` (the origin is the fist), or, for two-handed carries, place them between both hands' world positions after `root.updateMatrixWorld(true)`. Characters have no knees, so `sit` puts the legs straight out: seat them at open tables, not solid boxes. Crowds that cross each other need separate lanes or matching speeds.
 - Keep the camera **inside** enclosed rooms (below the ceiling lights at `h - 0.05`, default h = 4) and avoid clipping through actors.
 - Captions are short, dry and funny. Usually 5–8 per scene, 3–6 s each. The UI shows one at a time, so don't overlap them. All visible text must be translated (see Internationalization).
 - Sound is synthesized only (`ctx.sfx.*`, including `ambient(name)` beds). No audio or model files. Sound calls before the user clicks "Enter" are harmless no-ops.
@@ -92,12 +93,14 @@ npm run build          # typecheck (app + worker) and build to dist/
 npm run preview        # build + `wrangler dev --env local` at :8799 (try http://one.localhost:8799/)
 npm run shots -- 1-5   # with `vite preview --port 4173` running: render scenes into ./shots/*.png
 npm run i18n:extract   # with `vite preview` running: rebuild src/i18n/catalog.json from all scenes
+node scripts/audit.mjs 1-5  # with `vite preview` running: report clipping and misplaced held props
 npm run deploy         # build + wrangler deploy (needs `wrangler login`)
 ```
 
 ## Verification before committing
 1. `npm test` and `npm run build` pass.
-2. Run `npm run shots -- <days>` for any scene you touched. It must print `ok` (no console errors). Look at the PNGs to confirm the scene reads clearly: subject in frame, camera not inside geometry, nothing too dark.
+2. Run `node scripts/audit.mjs <days>` for any scene you touched and fix real hits: characters walking through each other or through furniture, props inside bodies, held props that float off the hand. It measures bounding boxes, so confirm each hit on a screenshot before changing anything.
+3. Run `npm run shots -- <days>` for any scene you touched. It must print `ok` (no console errors). Look at the PNGs to confirm the scene reads clearly: subject in frame, camera not inside geometry, nothing too dark.
 
 ## Git conventions
 - Use **Conventional Commits**: `feat(scenes): add day 12 the shambling`, `fix(worker): …`, `chore: …`, `docs: …`, `test: …`, `refactor(engine): …`.

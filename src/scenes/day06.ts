@@ -112,15 +112,17 @@ const scene: SceneDef = {
     scene.add(strike);
 
     // passers-by: shuffling up and down the road, some with umbrellas
+    const umbrellas: (THREE.Group | null)[] = [];
     const passers = [0, 1, 2, 3, 4, 5].map((i) => {
       const p = new Player({ hairStyle: r.pick(["short", "cap", "bun", "bald"] as const), shirt: r.pick([0x6c757d, 0x1d3557, 0x4a4e69, 0x264653, 0x5c4033]), accessories: i % 3 === 0 ? ["hood"] : ["backpack"], robe: 0x2b2d42 }, 610 + i);
       if (i % 2 === 0) {
+        // held in the right fist; the update keeps it upright whatever the arm does
         const umb = new THREE.Group();
-        umb.add(mesh(new THREE.ConeGeometry(0.75, 0.35, 8), mat(r.pick([0x111111, 0x9d0208, 0x1d3557]))));
-        umb.add(box(0.03, 0.8, 0.03, 0x222222, 0, -0.4, 0));
-        umb.position.set(-0.1, 2.25, 0);
-        p.root.add(umb);
-      }
+        umb.add(mesh(new THREE.ConeGeometry(0.75, 0.35, 8), mat(r.pick([0x111111, 0x9d0208, 0x1d3557]))).translateY(0.62));
+        umb.add(box(0.03, 0.62, 0.03, 0x222222, 0, 0.31, 0));
+        p.handR.add(umb);
+        umbrellas.push(umb);
+      } else umbrellas.push(null);
       scene.add(p.root);
       return p;
     });
@@ -134,6 +136,7 @@ const scene: SceneDef = {
     // 0-11 sermon in the rain | 11.6 THUNDER + bolt | 13-20 passers ignore
     // 20-24 a listener stops, then leaves | 25 lightning hits REPENT | 26-36 RETRY? adopted
     const strikes = [11.6, 25];
+    const uq = new THREE.Quaternion();
     let wasRevised = false;
     ctx.update((t, dt) => {
       rain.update(dt);
@@ -187,6 +190,13 @@ const scene: SceneDef = {
           p.head.rotation.x = 0.35;
           // a glance at the lightning, then back to minding their business
           p.head.rotation.y = (bump(t, 11.8, 13) + bump(t, 25.2, 26.4)) * 0.8 * (dir > 0 ? -1 : 1);
+        }
+        const umb = umbrellas[i];
+        if (umb) {
+          // umbrella arm: raised forward and in, so the canopy sits over the head
+          p.armR.rotation.set(-2.3, 0, 0.3);
+          uq.copy(p.body.quaternion).multiply(p.hips.quaternion).multiply(p.torso.quaternion).multiply(p.armR.quaternion).invert();
+          umb.quaternion.copy(uq);
         }
       });
 

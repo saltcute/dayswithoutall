@@ -98,11 +98,11 @@ const scene: SceneDef = {
     const pilgrims = coats.map((c, i) => {
       const p = new Player({ accessories: ["robe", "hood"], robe: c, skin: r.pick([0xf5d0b0, 0xc98e66, 0xe8b894]) }, 1600 + i);
       scene.add(p.root);
-      const a = Math.PI / 2 + (i - 2.5) * 0.36;
-      return { p, hx: Math.cos(a) * 2.9, hz: AZ + Math.sin(a) * 2.9, at: 5.5 + i * 1.9 };
+      const a = Math.PI / 2 + (i - 2.5) * 0.42;
+      return { p, hx: Math.cos(a) * 3.2, hz: AZ + Math.sin(a) * 2.9, at: 5.5 + i * 1.9 }; // a wide arc: room to kneel side by side
     });
     // the one who raises a metal rod at the end
-    const rod = box(0.04, 1.6, 0.04, 0xb0b0b0, 0, -0.5, 0.05);
+    const rod = box(0.04, 1.6, 0.04, 0xb0b0b0, 0, -0.72, 0); // gripped near its base, sticking out past the fist
     pilgrims[2].p.handR.add(rod);
 
     sfx.ambient("rain", 0.9);
@@ -139,7 +139,7 @@ const scene: SceneDef = {
       world.sun.intensity = far ? 2.2 : 0.6;
 
       pilgrims.forEach(({ p, hx, hz, at }, i) => {
-        const ax = hx * 0.45, az = AZ + 0.95;
+        const ax = hx * 0.45, az = AZ + 1.3; // stop short of the altar slab
         const go = smooth(seg(t, at - 0.9, at)), back = smooth(seg(t, at + 1.0, at + 1.8));
         const k = go - back;
         p.root.position.set(hx + (ax - hx) * k, 0, hz + (az - hz) * k);
@@ -161,14 +161,24 @@ const scene: SceneDef = {
         } else if (i === 2) {
           // Lightning rod volunteer
           p.root.position.set(hx * 0.7, 0, hz * 0.7 + AZ * 0.3);
+          p.face(0, AZ);
           p.pose("idle", t);
           p.armR.rotation.set(-2.9, 0, 0.1);
           p.head.rotation.x = -0.4;
         } else {
-          p.root.position.set(hx * 0.7, 0, hz * 0.7 + AZ * 0.3);
-          p.pose("kneel", t);
-          p.head.rotation.x = -0.3;
+          // shuffle back out to the ring before kneeling, so the robes don't overlap
+          const f = 0.7 + 0.3 * smooth(seg(t, 33.5, 34.3));
+          p.root.position.set(hx * f, 0, hz * f + AZ * (1 - f));
+          p.face(0, AZ);
+          if (f < 1) p.pose("walk", t);
+          else {
+            p.pose("kneel", t);
+            p.head.rotation.x = -0.3;
+          }
         }
+        // raised arms splay outward so they clear the hood
+        if (p.armL.rotation.x < -2) p.armL.rotation.z = Math.max(0.3, Math.abs(p.armL.rotation.z));
+        if (p.armR.rotation.x < -2) p.armR.rotation.z = -Math.max(0.3, Math.abs(p.armR.rotation.z));
         rod.visible = t > 33.5;
       });
     });
@@ -210,8 +220,8 @@ const scene: SceneDef = {
     // --- Camera ---
     ctx.cameraPath([
       { t: 0, pos: [0, 3.2, 12], look: [0, 1.6, -2] },
-      { t: 5.6, pos: [3.6, 1.7, 2.8], look: [0, 1, -1.4] },
-      { t: 11.3, pos: [-3.2, 1.9, 2.2], look: [0, 1, -1.4] },
+      { t: 5.6, pos: [3.6, 2.3, 3.3], look: [0, 1, -1.4] },
+      { t: 11.3, pos: [-3.2, 2.3, 2.8], look: [0, 1, -1.4] },
       { t: 11.6, pos: [2.0, 1.9, -0.3], look: [0.1, 1.0, AZ], fov: 42 },
       { t: 16.8, pos: [1.8, 1.8, -0.1], look: [0, 1.1, AZ], fov: 42 },
       { t: 17.2, pos: [-5, 2.2, 6.5], look: [0, 2.2, -2] , fov: 50 },

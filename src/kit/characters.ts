@@ -60,6 +60,8 @@ const G = {
   crown: new THREE.CylinderGeometry(0.17, 0.17, 0.12, 5, 1, true).translate(0, 0.44, 0),
 };
 
+let nextSeed = 1000; // deterministic default seeds, in construction order
+
 export class Player {
   readonly root = new THREE.Group();
   /** Whole-body pivot at the feet (used for faint/lie/crawl). */
@@ -78,7 +80,7 @@ export class Player {
   private cape?: THREE.Object3D;
   readonly phase: number;
 
-  constructor(o: PlayerOpts = {}, seed = Math.random() * 1e9) {
+  constructor(o: PlayerOpts = {}, seed = nextSeed++) {
     const r = rng(seed);
     this.phase = r.range(0, 10);
     const skin = mat(o.skin ?? r.pick(SKINS));
@@ -383,11 +385,12 @@ export class Player {
         head.rotation.x = 0.2;
         break;
       case "crawl": {
+        // body tipped forward; legs trail straight behind and drag
         body.rotation.x = Math.PI / 2 * 0.85;
         body.position.y = 0.25;
         body.position.z = -0.1;
-        legL.rotation.x = 1.4 + s(tt * 4) * 0.3;
-        legR.rotation.x = 1.4 - s(tt * 4) * 0.3;
+        legL.rotation.x = 0.1 + s(tt * 4) * 0.25;
+        legR.rotation.x = 0.1 - s(tt * 4) * 0.25;
         armL.rotation.x = -1.4 - s(tt * 4) * 0.4;
         armR.rotation.x = -1.4 + s(tt * 4) * 0.4;
         head.rotation.x = -0.9;

@@ -27,9 +27,10 @@ export function coinPile(n: number, seed = 1, radius = 0.25) {
 
 const CARD_COLORS = [0x3a86ff, 0xff006e, 0xffbe0b, 0x8338ec, 0x06d6a0, 0xfb5607];
 const cardGeo = new THREE.BoxGeometry(0.34, 0.01, 0.22);
-/** An arcade IC card. */
+let cardIdx = 0;
+/** An arcade IC card. Without a color, cycles through CARD_COLORS deterministically. */
 export function card(color?: number) {
-  const c = mesh(cardGeo, mat(color ?? CARD_COLORS[Math.floor(Math.random() * CARD_COLORS.length)]));
+  const c = mesh(cardGeo, mat(color ?? CARD_COLORS[cardIdx++ % CARD_COLORS.length]));
   const stripe = mesh(new THREE.BoxGeometry(0.34, 0.012, 0.04), mat(0xffffff), false, false);
   stripe.position.z = -0.06;
   c.add(stripe);
@@ -93,7 +94,7 @@ export function candle() {
   const l = new THREE.PointLight(0xffb347, 1.2, 3, 2);
   l.position.y = 0.25;
   g.add(l);
-  return g;
+  return Object.assign(g, { flame: fl, light: l });
 }
 
 export function torch() {
@@ -105,7 +106,7 @@ export function torch() {
   const l = new THREE.PointLight(0xff8c3a, 2.5, 6, 1.8);
   l.position.y = 1.4;
   g.add(l);
-  return g;
+  return Object.assign(g, { flame: f, light: l });
 }
 
 export function glowstick(color = 0x39ff14) {

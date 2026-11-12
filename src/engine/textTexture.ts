@@ -95,7 +95,13 @@ export function textPlane(lines: string | string[], w: number, h: number, style:
   tt.draw(lines, style);
   const m = new THREE.Mesh(
     new THREE.PlaneGeometry(w, h),
-    new THREE.MeshBasicMaterial({ map: tt.texture, transparent: style.bg === "" || !!style.round, side: THREE.DoubleSide }),
+    new THREE.MeshBasicMaterial({
+      map: tt.texture,
+      transparent: style.bg === "" || !!style.round,
+      // transparent text must not occlude what's behind its empty pixels
+      depthWrite: !(style.bg === "" || !!style.round),
+      side: THREE.DoubleSide,
+    }),
   );
   return Object.assign(m, { tt });
 }

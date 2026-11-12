@@ -150,8 +150,8 @@ export class Sfx {
     src.stop(t0 + dur + 0.05);
   }
 
-  private notes(seq: [number, number, number?][], o: ToneOpts = {}) {
-    // [freq, startOffset, dur]
+  /** Play a sequence of [freq, startOffset, dur?] notes. */
+  notes(seq: [number, number, number?][], o: ToneOpts = {}) {
     for (const [f, at, d] of seq) this.tone(f, d ?? 0.2, { ...o, delay: (o.delay ?? 0) + at });
   }
 

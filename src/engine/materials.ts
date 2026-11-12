@@ -3,7 +3,10 @@ import * as THREE from "three";
 const lambertCache = new Map<string, THREE.MeshLambertMaterial>();
 const basicCache = new Map<string, THREE.MeshBasicMaterial>();
 
-/** Flat-shaded low-poly material, cached by color/options. */
+/**
+ * Flat-shaded low-poly material, cached by color/options. SHARED: clone() it
+ * before animating color/opacity on a single object.
+ */
 export function mat(color: number, opts: { emissive?: number; transparent?: boolean; opacity?: number; side?: THREE.Side } = {}) {
   const key = `${color}|${opts.emissive ?? 0}|${opts.opacity ?? 1}|${opts.side ?? 0}`;
   let m = lambertCache.get(key);
@@ -21,7 +24,7 @@ export function mat(color: number, opts: { emissive?: number; transparent?: bool
   return m;
 }
 
-/** Unlit (glowing) material, cached. */
+/** Unlit (glowing) material, cached and SHARED: clone() before animating. */
 export function glow(color: number, opacity = 1) {
   const key = `${color}|${opacity}`;
   let m = basicCache.get(key);

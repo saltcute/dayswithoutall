@@ -121,6 +121,11 @@ const scene: SceneDef = {
           p.head.rotation.x = 0.2 - lean * 0.25;
         } else if (cheer) {
           p.pose("cheer", freeze ? 16.5 + i * 0.1 : t + i * 0.2, freeze ? 0 : 1);
+          // hooded survivors raise their arms straight up, clear of the hood
+          if (i % 2) {
+            p.armL.rotation.z = 0.05;
+            p.armR.rotation.z = -0.05;
+          }
           if (freeze) {
             // slowly turn heads to the antenna
             const k = smooth(seg(t, 17.2 + i * 0.15, 18.6 + i * 0.15));
@@ -159,7 +164,7 @@ const scene: SceneDef = {
         ant.armR.rotation.set(-3.0 + Math.sin(t * 5) * 0.25, 0, Math.sin(t * 3.7) * 0.4);
         ant.torso.rotation.z = Math.sin(t * 2.5) * 0.25;
         ant.legL.rotation.z = Math.max(0, Math.sin(t * 2.5)) * 0.6;
-        ant.armL.rotation.z = -1.2;
+        ant.armL.rotation.z = 1.2; // flung out to the side for balance
       } else {
         ant.pose("sad", t);
         ant.armR.rotation.x = -2.6;

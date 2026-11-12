@@ -32,10 +32,18 @@ const scene: SceneDef = {
       cap.position.set(tr.position.x, tr.children[1].position.y + 0.6, tr.position.z);
       scene.add(cap);
     }
+    // rocks stay clear of the two huddles and the migration route between them
+    const offRoute = (x: number, z: number) => {
+      const k = Math.max(0, Math.min(1, ((x + 1.8) * 5 + (z + 1.2) * -1) / 26));
+      return Math.hypot(x + 1.8 - 5 * k, z + 1.2 + k) > 3.2;
+    };
     for (let i = 0; i < 7; i++) {
       const rk = rock(r.range(0.3, 0.7), 2910 + i, 0xc8d4e0);
-      rk.position.set(r.range(-8, 8), rk.position.y, r.range(-4, 6));
-      scene.add(rk);
+      for (let tries = 0; tries < 30; tries++) {
+        rk.position.set(r.range(-8, 8), rk.position.y, r.range(-4, 6));
+        if (offRoute(rk.position.x, rk.position.z)) break;
+      }
+      if (offRoute(rk.position.x, rk.position.z)) scene.add(rk);
     }
     // icicles on the wall
     for (let i = 0; i < 12; i++) {
@@ -68,7 +76,7 @@ const scene: SceneDef = {
       scene.add(c.group);
       return { c, vents, light: l };
     };
-    const cabs = [mk("lever", -1.8, -1.2, 0.25), mk("slider", 3.2, -2.2, -0.2)];
+    const cabs = [mk("lever", -1.8, -1.2, 0.25), mk("slider", 3.2, -2.2, -0.2)]; // keep in sync with A/B below
     const deadMat = new THREE.MeshBasicMaterial({ color: 0xff7a1a });
     cabs[0].vents.forEach((v) => (v.material = deadMat));
     const warm = new THREE.Color(0xff7a1a), cold = new THREE.Color(0x333a44);
@@ -80,8 +88,24 @@ const scene: SceneDef = {
     // Players in puffy coats (robe + hood), huddled at cabinet #1
     const coats = [0x7b2d26, 0x2a4d69, 0x4b5d3a, 0x6b4f7a, 0x8a6a2a, 0x3a3a4a];
     const N = 6;
-    const huddleA: [number, number][] = [[-2.85, -1.2], [-0.8, -1.5], [-2.6, -0.2], [-1.1, -0.3], [-1.9, 0.3], [-3.2, -0.8]];
-    const huddleB: [number, number][] = [[2.15, -2.0], [4.25, -2.4], [2.3, -1.0], [4.0, -1.2], [3.2, -0.6], [1.6, -1.5]];
+    // Each huddle is a ring around its cabinet, written in a frame aligned with
+    // the A->B route (u along it, v across it). Nobody sits on the route line
+    // itself, and for the migration the ring first widens across the route, so
+    // the colony shuffles past both cabinets instead of through them.
+    const A: [number, number] = [-1.8, -1.2], B: [number, number] = [3.2, -2.2];
+    const len = Math.hypot(B[0] - A[0], B[1] - A[1]);
+    const ux = (B[0] - A[0]) / len, uz = (B[1] - A[1]) / len; // along the route
+    const vx = -uz, vz = ux; // across it (towards the camera)
+    // (the odd ones crouch in "huddle" with their legs forward, so they sit further out)
+    const ring = ([[-1.04, -0.6], [1.04, -0.6], [-1.04, 0.6], [0, 1.2], [1.04, 0.6], [0, -1.2]] as [number, number][]).map(
+      ([u, v], i): [number, number] => [u * (i % 2 ? 1.35 : 1.1), v * (i % 2 ? 1.35 : 1.1)],
+    );
+    const at = (c: [number, number], u: number, v: number, sc = 1): [number, number] => [c[0] + (ux * u + vx * v) * sc, c[1] + (uz * u + vz * v) * sc];
+    const wide = (v: number) => v + Math.sign(v) * 0.75;
+    const huddleA = ring.map(([u, v]) => at(A, u, v));
+    const huddleB = ring.map(([u, v]) => at(B, u, v, 1.1)); // the slider is wider
+    const outA = ring.map(([u, v]) => at(A, u, wide(v)));
+    const outB = ring.map(([u, v]) => at(B, u * 1.1, wide(v * 1.1)));
     const players = Array.from({ length: N }, (_, i) => {
       const p = new Player({ shirt: coats[i], pants: 0x2b2b33, accessories: i === 2 ? ["robe", "hood", "goggles"] : i % 2 ? ["robe", "hood", "gloves"] : ["robe", "hood"], robe: coats[i], hairStyle: "short" }, 2920 + i);
       // scarf
@@ -124,21 +148,25 @@ const scene: SceneDef = {
       players.forEach((p, i) => {
         const [ax, az] = huddleA[i];
         const [bx, bz] = huddleB[i];
-        const k = smooth(seg(t, 27.5 + (i % 3) * 0.2, 33.5 + (i % 3) * 0.2));
+        const lag = (1.5 - ring[i][0]) * 0.15; // the front of the colony sets off first
+        const k = smooth(seg(t, 27.5 + lag, 33.5 + lag));
         if (k <= 0) {
           p.root.position.set(ax, 0, az);
-          p.face(-1.8, -1.2);
+          p.face(A[0], A[1]);
           if (t > 25.6) {
             p.pose("shiver", t, 2);
-            p.face(3.2, -2.2); // all heads turn to the other cabinet
+            p.face(B[0], B[1]); // all heads turn to the other cabinet
           } else if (i === 3 && t > 12 && t < 18.5) {
             p.pose("hold", t);
             p.armR.rotation.x = -1.3;
           } else if (i === 1 && t > 18.5 && t < 24) p.pose("talk", t);
           else p.pose(i % 2 ? "huddle" : "shiver", t, 1);
         } else if (k < 1) {
-          // the penguin shuffle: tiny steps, all together
-          p.travel(ax, az, bx, bz, k);
+          // the penguin shuffle: tiny steps, all together (widen, cross, close up)
+          const [oax, oaz] = outA[i], [obx, obz] = outB[i];
+          if (k < 0.2) p.travel(ax, az, oax, oaz, k / 0.2);
+          else if (k < 0.8) p.travel(oax, oaz, obx, obz, (k - 0.2) / 0.6);
+          else p.travel(obx, obz, bx, bz, (k - 0.8) / 0.2);
           p.pose("walk", t * 2.2);
           p.legL.rotation.x *= 0.35;
           p.legR.rotation.x *= 0.35;
@@ -147,7 +175,7 @@ const scene: SceneDef = {
           p.body.rotation.z = Math.sin(t * 16 + i) * 0.1;
         } else {
           p.root.position.set(bx, 0, bz);
-          p.face(3.2, -2.2);
+          p.face(B[0], B[1]);
           p.pose(i % 2 ? "huddle" : "shiver", t, 1);
           if (t > 35 && i === 4) p.pose("cheer", t, 0.15); // a small victory
         }
@@ -158,7 +186,7 @@ const scene: SceneDef = {
         pf.position.set(0, 0.12 + bp * 0.3, 0.25 + bp * 0.7);
         pf.scale.setScalar(0.6 + bp * 4);
       });
-      can.visible = t > 11.5 && t < 27;
+      can.visible = t > 12 && t < 18.5; // only while it is held up to the vent
       steam.forEach((s, k) => {
         const sp = ((t * 0.8 + k / 3) % 1);
         s.position.set(Math.sin(t * 2 + k) * 0.04, 0.1 + sp * 0.4, 0);
@@ -199,8 +227,8 @@ const scene: SceneDef = {
       { t: 0, pos: [0, 4.5, 12], look: [0, 1, -1] },
       { t: 6, pos: [0.5, 2.6, 5.5], look: [-1.5, 0.8, -1] },
       { t: 12, pos: [-1.0, 1.5, 2.6], look: [-1.8, 0.8, -1], fov: 45 },
-      { t: 13.5, pos: [1.9, 1.5, -0.1], look: [-1.3, 0.8, -0.6], fov: 42 },
-      { t: 18, pos: [1.8, 1.5, 0.1], look: [-1.3, 0.8, -0.6], fov: 40 },
+      { t: 13.5, pos: [1.0, 1.6, 1.7], look: [-1.4, 0.95, -0.3], fov: 42 },
+      { t: 18, pos: [0.9, 1.6, 1.6], look: [-1.4, 0.95, -0.3], fov: 40 },
       { t: 19, pos: [-4.8, 2.2, 3.5], look: [-1.8, 0.8, -0.8] },
       { t: 24, pos: [-0.5, 1.8, 3.6], look: [-1.8, 0.9, -1.2] },
       { t: 27, pos: [0.5, 1.9, 4.5], look: [0.5, 0.9, -1.3] },

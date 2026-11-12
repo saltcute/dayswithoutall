@@ -128,7 +128,7 @@ const scene: SceneDef = {
 
     // The hero and the audience
     const hero = new Player({ shirt: 0x06d6a0, hairStyle: "spiky", hair: 0x9b5de5, accessories: ["gloves", "headband"] }, 305);
-    hero.at(LX + heroX, -ld / 2 + 1.42, Math.PI);
+    hero.at(LX + heroX, -ld / 2 + 1.5, Math.PI);
     scene.add(hero.root);
     const folder = new Player({ shirt: 0xf4a261, hairStyle: "long", hair: 0x6b4423 }, 306);
     folder.at(LX - 2.4, 0.85);
@@ -179,7 +179,7 @@ const scene: SceneDef = {
         waiter.pose(wk < 1 ? "walk" : "talk", t);
         if (wk >= 1) waiter.face(-2.5, -0.65);
       } else {
-        waiter.travel(-2.1, 0.75, -7, 3, wb);
+        waiter.travel(-2.1, 0.75, -5.6, 5, wb); // off past the tree, not into it
         waiter.pose("walk", t);
       }
 
@@ -189,9 +189,11 @@ const scene: SceneDef = {
       slider.legL.rotation.x = slider.legR.rotation.x = -1.5;
       slider.hips.position.y = 0.48;
       slider.torso.rotation.x = 0.3;
+      slider.armL.rotation.x -= 0.2; // sweep above the knees, not through them
+      slider.armR.rotation.x -= 0.2;
       slider.head.rotation.x = 0.35;
       const gs = smooth(seg(t, 8, 11.5));
-      granny.at(3 + lerp(0.45, 1.0, gs), -1.2 + 0.1);
+      granny.at(3 + lerp(0.45, 0.82, gs), -1.2 + 0.1);
       granny.pose("sit", t);
       granny.head.rotation.y = -0.6 + bump(t, 7, 9) * 0.3;
       granny.torso.rotation.z = -gs * 0.15;
@@ -210,7 +212,7 @@ const scene: SceneDef = {
         hero.legL.rotation.x = hero.legR.rotation.x = 0;
         hero.hips.position.y = 0.8;
         hero.hips.position.z = 0;
-        hero.torso.rotation.x = 0.6;
+        hero.torso.rotation.x = 0.45;
         hero.armL.rotation.x = hero.armR.rotation.x = 0;
       }
       // dryer reacts: the drum spins and wobbles with the "chart"

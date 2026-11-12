@@ -27,7 +27,13 @@ const scene: SceneDef = {
     const world = setupWorld(ctx, { sky: 0xe6c48e, fog: [20, 85], ground: 0x8a6a40, sun: 0xfff0c8, sunIntensity: 2.4, hemi: 1.0, sunPos: [8, 14, 10], shadowSize: 16 });
     const ground = terrain(180, 44, 0.3, 0xc9a56b, 99, 16);
     scene.add(ground);
-    skyline(ctx, 60, 0xb08a60, 30, 19);
+    const sky = skyline(ctx, 60, 0xb08a60, 30, 19);
+    // leave a gap in the skyline where the convoy's road comes through
+    for (const b of sky.children as THREE.Mesh[]) {
+      b.geometry.computeBoundingBox();
+      const d = b.geometry.boundingBox!.max.z;
+      if (b.position.x < 0 && Math.abs(b.position.z - ROAD_Z) < d + 1.6) b.visible = false;
+    }
     const r = rng(909);
 
     // the arcade, now a fortress
@@ -165,7 +171,10 @@ const scene: SceneDef = {
     // --- Timeline ---
     // 0-13 planks | 14 lookout spots dust | 16-25 convoy arrives | 25-27 unload
     // 27-30.5 carry the prize to the door | 30.5 BONK | 31-40 realization
-    const truckX = (t: number, i: number) => lerp(-75 + i * 7, stops[i], easeOut(seg(t, 15.5 + i * 0.5, 25 + i * 0.3)));
+    // the convoy keeps its spacing (4.4 m) so the trucks never drive through each other
+    const truckX = (t: number, i: number) => lerp(-61, stops[2], easeOut(seg(t, 15.5, 25.2))) - (2 - i) * 4.4;
+    // the prize's route: off the truck, round the spikes, then straight through the gap to the door
+    const LAND_Z = ROAD_Z - 2.4, GAP_Z = 5.3, CARRY_W = 1.14;
     const v = new THREE.Vector3();
     ctx.update((t) => {
       // planks fly into place
@@ -188,12 +197,12 @@ const scene: SceneDef = {
           for (const j of jobs) if (j.worker === i && t > j.t - 0.1 && t < j.t + 0.8) active = true;
           if (!active) p.pose("hold", t);
         } else if (t < 31) {
-          p.at(o.x + (i === 1 ? 1.35 : 0.25), 1.0);
+          p.at(o.x + (i === 1 ? 1.7 : 0.25), 1.0);
           p.face(t < 27 ? -1 : prize.group.position.x, t < 27 ? ROAD_Z : prize.group.position.z);
           p.pose(t > 24.6 && t < 27 ? "cheer" : "idle", t);
         } else {
           // the realization: turn to the door, then to each other
-          p.at(o.x + (i === 1 ? 1.35 : 0.25), 1.0);
+          p.at(o.x + (i === 1 ? 1.7 : 0.25), 1.0);
           if (t < 34) p.face(0, -1);
           else p.face(i === 1 ? -2 : 0, i === 1 ? 4 : 0.8);
           p.pose(t > 34 ? (i === 1 ? "facepalm" : "point") : "idle", t);
@@ -223,34 +232,42 @@ const scene: SceneDef = {
         const age = (t * 1.5 + i / puffs.length) % 1;
         const moving = truckX(t, i % 3) < stops[i % 3] - 0.05;
         pf.visible = moving && t > 15;
-        pf.position.set(tg.position.x - 1.8 - age * 3, 0.3 + age * 1.2, tg.position.z + Math.sin(i * 1.7) * 0.6);
-        pf.scale.setScalar(0.6 + age * 2);
+        // dust billows out low and to the sides, clear of the riders and the next truck
+        pf.position.set(tg.position.x - 1.9 - age * 1.6, 0.25 + age * 0.6, tg.position.z + (i % 2 ? 1 : -1) * (0.75 + age * 1.1));
+        pf.scale.setScalar(0.6 + age * 1.4);
       });
       // the prize: on truck 1, then slid off, then carried to the (boarded) door
       const t1 = trucks[0].position;
       const off = smooth(seg(t, 25.5, 27));
       const carry = smooth(seg(t, 27.2, 30.5));
       const bonk = bump(t, 30.5, 31.1);
-      if (t < 27.2) prize.group.position.set(t1.x - 0.4 * off, lerp(1.22, 0, off), lerp(t1.z - 0.6, ROAD_Z - 2.4, off));
-      else prize.group.position.set(lerp(t1.x - 0.4, 0, carry), 0, lerp(ROAD_Z - 2.4, 0.95, carry) + bonk * 0.25);
+      const landX = stops[0] - 0.4;
+      if (t < 27.2) prize.group.position.set(t1.x - 0.4 * off, lerp(1.22, 0, off), lerp(t1.z - 0.6, LAND_Z, off));
+      else {
+        const l1 = Math.hypot(landX, LAND_Z - GAP_Z), l2 = GAP_Z - 0.95;
+        const d = carry * (l1 + l2);
+        const lift = carry > 0 && carry < 1 ? 0.08 : 0;
+        if (d < l1) prize.group.position.set(lerp(landX, 0, d / l1), lift, lerp(LAND_Z, GAP_Z, d / l1));
+        else prize.group.position.set(0, lift, lerp(GAP_Z, 0.95, (d - l1) / l2) + bonk * 0.25);
+      }
       prize.group.rotation.y = (t > 30.5 ? Math.sin(t * 30) * 0.03 * (1 - seg(t, 30.5, 31.5)) : 0);
       prize.group.rotation.z = bonk * 0.05;
       prize.screenMat.color.setScalar(t > 31 && t < 32 && Math.sin(t * 40) > 0 ? 0.3 : 1);
       carriers.forEach((p, i) => {
         const side = i ? 0.7 : -0.7;
-        if (t < 25.5) {
-          p.at(t1.x + side * 1.4, ROAD_Z - 1.6);
-          p.root.visible = t > 24.8;
+        // they wait beside the landing spot, then carry it crab-style from either side
+        p.root.visible = t > 24.8;
+        if (t < 26.8) {
+          p.at(stops[0] - 0.4 + Math.sign(side) * CARRY_W, LAND_Z + 0.05);
           p.pose("idle", t);
           p.face(t1.x, ROAD_Z);
         } else {
-          p.root.visible = true;
-          p.at(prize.group.position.x + side, prize.group.position.z + 0.05);
-          p.root.rotation.y = Math.PI;
-          p.pose(carry > 0 && carry < 1 ? "walk" : "hold", t * 0.7);
-          if (carry > 0 && carry < 1) {
-            p.armL.rotation.x = p.armR.rotation.x = -1.2;
-          }
+          p.at(prize.group.position.x + Math.sign(side) * CARRY_W, prize.group.position.z + 0.05);
+          p.face(prize.group.position.x, prize.group.position.z + 0.05);
+          p.pose(carry > 0 && carry < 1 ? "walk" : "idle", t * 0.7);
+          // hands on the cabinet's sides
+          p.armL.rotation.x = p.armR.rotation.x = -1.4;
+          p.armL.rotation.z = p.armR.rotation.z = 0;
           if (t > 31) {
             p.pose(t > 33 ? "sad" : "idle", t);
             p.head.rotation.y = side > 0 ? 0.6 : -0.6;

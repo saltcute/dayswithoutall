@@ -145,7 +145,7 @@ const scene: SceneDef = {
     ctx.cameraPath([
       { t: 0, pos: [0, 2.4, 13], look: [0, 1.4, 0] },
       { t: 6.5, pos: [0, 2, 3.5], look: [0, 1.5, -4] },
-      { t: 7.5, pos: [-0.9, 1.6, -1.6], look: [-0.9, 1.55, -4.2] }, // push into an error screen
+      { t: 7.5, pos: [-0.9, 2.15, -1.9], look: [-0.9, 1.6, -4.2] }, // push into an error screen (over the player's head)
       { t: 10, pos: [3, 2.2, 2.5], look: [0, 1, -2.6] },
       { t: 14, pos: [5.5, 3.2, 5.5], look: [0, 0.6, -2.5] },
       { t: 30, pos: [-5.5, 3.2, 5], look: [0, 0.6, -2.5] },

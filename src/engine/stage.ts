@@ -137,8 +137,8 @@ export class Stage {
     requestAnimationFrame(tick);
   }
 
-  /** Advance by dt seconds (exposed for deterministic screenshots). */
-  advance(dt: number) {
+  /** Advance by dt seconds. `draw=false` updates state without rendering (used by seek). */
+  advance(dt: number, draw = true) {
     const prev = this.t;
     let next = prev + dt;
     if (next >= this.duration) {
@@ -151,23 +151,25 @@ export class Stage {
       this.fireCues(prev, next);
     }
     this.t = next;
-    this.renderFrame(dt);
+    this.renderFrame(dt, draw);
   }
 
   /** Jump directly to time t (used by tests/screenshots). */
   seek(t: number) {
     this.restart();
     const step = 1 / 30;
-    while (this.t + step < t) this.advance(step);
+    while (this.t + step < t) this.advance(step, false);
+    this.renderFrame(0, true);
   }
 
   private fireCues(from: number, to: number) {
     for (const c of this.cues) if (c.at > from && c.at <= to) c.fn();
   }
 
-  private renderFrame(dt: number) {
+  private renderFrame(dt: number, draw = true) {
     const t = this.t;
     for (const u of this.updaters) u(t, dt);
+    if (!draw) return;
     this.updateCamera(t);
     this.updateCaption(t);
     this.updateFlash(t);

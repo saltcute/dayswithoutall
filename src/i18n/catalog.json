@@ -1,0 +1,1413 @@
+{
+  "The Arrival": [
+    "ui"
+  ],
+  "They came to play. The cabinets had other plans.": [
+    "ui"
+  ],
+  "Day {n} without ALL.Net: {title}": [
+    "ui"
+  ],
+  "THIS ARCADE HAS GONE": [
+    "ui"
+  ],
+  "without incident*": [
+    "ui"
+  ],
+  "{n} days": [
+    "ui"
+  ],
+  "DAYS WITHOUT": [
+    "ui"
+  ],
+  "*the incident is ongoing": [
+    "ui"
+  ],
+  "Language": [
+    "ui"
+  ],
+  "Replay (R)": [
+    "ui"
+  ],
+  "Replay scene": [
+    "ui"
+  ],
+  "Mute (M)": [
+    "ui"
+  ],
+  "Mute": [
+    "ui"
+  ],
+  "Day navigation": [
+    "ui"
+  ],
+  "DAY {n}": [
+    "ui"
+  ],
+  "Day {n} ▶": [
+    "ui"
+  ],
+  "● ALL.Net status: unreachable": [
+    "ui"
+  ],
+  "Day {n}:": [
+    "ui"
+  ],
+  "↻ REPLAY": [
+    "ui"
+  ],
+  "Sound on for maximum despair. Fan-made parody; not affiliated with SEGA.": [
+    "ui"
+  ],
+  "Day {n} →": [
+    "ui"
+  ],
+  "📜 Archive. It is now {link}": [
+    "ui"
+  ],
+  "🔈 Click anywhere for sound": [
+    "ui"
+  ],
+  "GAME CENTER": [
+    "day01",
+    "day02",
+    "day07",
+    "day09",
+    "day20",
+    "day24",
+    "day27",
+    "day28",
+    "day30"
+  ],
+  "NETWORK": [
+    "day01",
+    "day02",
+    "day05",
+    "day07",
+    "day08",
+    "day09",
+    "day11",
+    "day12",
+    "day16",
+    "day18",
+    "day20",
+    "day21",
+    "day24",
+    "day27",
+    "day28",
+    "day29",
+    "day30",
+    "day31"
+  ],
+  "ERROR": [
+    "day01",
+    "day02",
+    "day05",
+    "day07",
+    "day08",
+    "day09",
+    "day11",
+    "day12",
+    "day16",
+    "day18",
+    "day20",
+    "day21",
+    "day24",
+    "day27",
+    "day28",
+    "day29",
+    "day30",
+    "day31"
+  ],
+  "code {0}": [
+    "day01",
+    "day02",
+    "day05",
+    "day07",
+    "day08",
+    "day09",
+    "day11",
+    "day12",
+    "day16",
+    "day18",
+    "day20",
+    "day21",
+    "day24",
+    "day27",
+    "day28",
+    "day29",
+    "day30",
+    "day31"
+  ],
+  "★ ARCADE ★": [
+    "day01",
+    "day30"
+  ],
+  "PRESS START": [
+    "day01",
+    "day30"
+  ],
+  "Day {0}. {1}:{2} AM. The arcade opens. The faithful arrive, gloves on, hearts full.": [
+    "day01"
+  ],
+  "Then every screen said the same two words.": [
+    "day01"
+  ],
+  "“It's probably a quick maintenance,” someone said. Everyone agreed to wait.": [
+    "day01"
+  ],
+  "Hour {0}. Hope remains.": [
+    "day01"
+  ],
+  "Hour {0}. Hope remains, mostly.": [
+    "day01"
+  ],
+  "Hour {0}. The staff went home. The players did not.": [
+    "day01"
+  ],
+  "Dawn. Surely now—": [
+    "day01"
+  ],
+  "ALL.Net did not return. Neither did their dignity.": [
+    "day01"
+  ],
+  "The Pact": [
+    "ui"
+  ],
+  "No credits shall be inserted until the server returns.": [
+    "ui"
+  ],
+  "◀ Day {n}": [
+    "ui"
+  ],
+  "Day {0}. Withdrawal. Symptoms include shivering, sweating, and tapping on things that aren't buttons.": [
+    "day02"
+  ],
+  "Some have not blinked since the error screen. Some cannot stop.": [
+    "day02"
+  ],
+  "Then one of them rises. He has an idea. The idea is a rule.": [
+    "day02"
+  ],
+  "Hands are placed. Slowly. Because this is important.": [
+    "day02"
+  ],
+  "“NO CREDITS UNTIL IT RETURNS.”": [
+    "day02"
+  ],
+  "The pact is sealed. Historians will call it brave.": [
+    "day02"
+  ],
+  "Minute six. The first relapse.": [
+    "day02"
+  ],
+  "It was the guy who proposed the pact.": [
+    "day02"
+  ],
+  "Phantom Limbs": [
+    "ui"
+  ],
+  "The hands remember what the heart cannot forget.": [
+    "ui"
+  ],
+  "BUS": [
+    "day03"
+  ],
+  "every {0} min": [
+    "day03"
+  ],
+  "SUDZ COIN LAUNDRY": [
+    "day03"
+  ],
+  "no loitering • no dancing": [
+    "day03"
+  ],
+  "CYCLE COMPLETE": [
+    "day03"
+  ],
+  "rating: DELICATES": [
+    "day03"
+  ],
+  "Day {0}. The hands have not been told the server is down.": [
+    "day03"
+  ],
+  "Café tables. Coffee unordered. A chart cleared from memory, no misses.": [
+    "day03"
+  ],
+  "The bus stop. Fourteen slides per second. Three buses missed.": [
+    "day03"
+  ],
+  "And then there is the laundromat.": [
+    "day03"
+  ],
+  "He found a round machine with a glowing ring. Close enough.": [
+    "day03"
+  ],
+  "Customers report he has been here since opening. On the dryer. Not using it.": [
+    "day03"
+  ],
+  "The machine has rated his performance.": [
+    "day03"
+  ],
+  "He will be back tomorrow. His socks are still in there.": [
+    "day03"
+  ],
+  "Rationing": [
+    "ui"
+  ],
+  "Every coin is counted. Twice. By candlelight.": [
+    "ui"
+  ],
+  "NO CREDITS ACCEPTED HERE": [
+    "day04"
+  ],
+  "CUP NOODLE": [
+    "day04"
+  ],
+  "= {0} COINS": [
+    "day04"
+  ],
+  "CHIPS: {0} CARD": [
+    "day04"
+  ],
+  "(rare only)": [
+    "day04"
+  ],
+  "WE BUY CARDS": [
+    "day04"
+  ],
+  "(we pay in cards)": [
+    "day04"
+  ],
+  "HOT WATER": [
+    "day04"
+  ],
+  "+{0} COINS": [
+    "day04"
+  ],
+  "Day {0}. Every coin is precious now. Every coin is counted.": [
+    "day04"
+  ],
+  "Twenty-three. Twenty-four. He loses count. He always loses count.": [
+    "day04"
+  ],
+  "He starts over. This is count number one thousand, two hundred and four.": [
+    "day04"
+  ],
+  "Night. The barter market. Here, coins are worth exactly what someone hungry says.": [
+    "day04"
+  ],
+  "Today's rate: one noodle cup for her life savings and her rarest card.": [
+    "day04"
+  ],
+  "A fair deal. She checks the cup.": [
+    "day04"
+  ],
+  "Ah.": [
+    "day04"
+  ],
+  "She ate it dry. Out of principle. The market respects principle. Not much else.": [
+    "day04"
+  ],
+  "COIN LEDGER": [
+    "day04"
+  ],
+  "count #{0}": [
+    "day04"
+  ],
+  "The Mirage": [
+    "ui"
+  ],
+  "Out in the wastes, something glows ONLINE.": [
+    "ui"
+  ],
+  "ARCADE": [
+    "day05"
+  ],
+  "{0} km →": [
+    "day05"
+  ],
+  "ONLINE": [
+    "day05",
+    "day13",
+    "day16",
+    "day24"
+  ],
+  "COLD DRINKS": [
+    "day05"
+  ],
+  "SOLD OUT": [
+    "day05"
+  ],
+  "OUT OF ORDER": [
+    "day05"
+  ],
+  "Day {0}. The wastes. Water is scarce. Credits are forbidden. Hope is…": [
+    "day05"
+  ],
+  "…over there.": [
+    "day05"
+  ],
+  "He has crawled four kilometres toward a single word.": [
+    "day05"
+  ],
+  "ONLINE. He has not seen that word in five days.": [
+    "day05"
+  ],
+  "Almost there. Almost there. Almost—": [
+    "day05"
+  ],
+  "It was a vending machine.": [
+    "day05"
+  ],
+  "It was also out of order.": [
+    "day05"
+  ],
+  "He stays anyway. It hums. It is warm. It is the closest thing to an arcade for miles.": [
+    "day05"
+  ],
+  "The Prophet": [
+    "ui"
+  ],
+  "The maintenance is eternal. Repent.": [
+    "ui"
+  ],
+  "THE MAINTENANCE": [
+    "day06"
+  ],
+  "IS ETERNAL": [
+    "day06"
+  ],
+  "(EST. END: ???)": [
+    "day06"
+  ],
+  "REPENT": [
+    "day06"
+  ],
+  "Day {0}. Downtown. What remains of it.": [
+    "day06"
+  ],
+  "Every apocalypse produces a prophet. This one brought a crate.": [
+    "day06"
+  ],
+  "He preaches the Maintenance. It began. It shall not end.": [
+    "day06"
+  ],
+  "The sky agrees with him. The sky has always had a flair for drama.": [
+    "day06"
+  ],
+  "The people pass by. They have heard it before. They have seen the status page.": [
+    "day06"
+  ],
+  "One stops to listen. A brief, regrettable lapse.": [
+    "day06"
+  ],
+  "Then, a second sign. It has been revised.": [
+    "day06"
+  ],
+  "The prophet accepts the revision. Doctrine is flexible in the wasteland.": [
+    "day06"
+  ],
+  "RETRY?": [
+    "day06"
+  ],
+  "The Great Schism": [
+    "ui"
+  ],
+  "One coin. One slot. One very big fight.": [
+    "ui"
+  ],
+  "MAINTENANCE": [
+    "day07",
+    "day19",
+    "day30"
+  ],
+  "IN PROGRESS": [
+    "day07"
+  ],
+  "please wait…": [
+    "day07"
+  ],
+  "INSERT": [
+    "day07"
+  ],
+  "CREDIT": [
+    "day07"
+  ],
+  "Day {0}. {1}:{2} AM. The tribe sleeps. Except one.": [
+    "day07"
+  ],
+  "He has found a coin. A very big temptation in a very small object.": [
+    "day07"
+  ],
+  "“STOP!”": [
+    "day07"
+  ],
+  "The elder has spoken. Then everyone else spoke, physically.": [
+    "day07"
+  ],
+  "Historians call it the Great Schism. Mistakes were made. Mostly by elbows.": [
+    "day07"
+  ],
+  "Dawn. Nobody won.": [
+    "day07"
+  ],
+  "The coin, meanwhile, made its own decision.": [
+    "day07"
+  ],
+  "It has not been seen since. The pact holds. Technically.": [
+    "day07"
+  ],
+  "Tribes": [
+    "ui"
+  ],
+  "Circles, sliders, levers. Pick a side.": [
+    "ui"
+  ],
+  "WASHERS": [
+    "day08"
+  ],
+  "TERRITORY": [
+    "day08"
+  ],
+  "SLIDERS": [
+    "day08"
+  ],
+  "LEVERS": [
+    "day08"
+  ],
+  "Day {0}. Without a common server, the community has reorganised along ancient lines.": [
+    "day08"
+  ],
+  "The Washers. They believe in the Ring. They will not shut up about the Ring.": [
+    "day08"
+  ],
+  "The Sliders. Their hands have not left a flat surface since Tuesday.": [
+    "day08"
+  ],
+  "The Levers. Fewest in number. Most in confidence.": [
+    "day08"
+  ],
+  "Borders are drawn in hazard tape, the strongest material known to arcade staff.": [
+    "day08"
+  ],
+  "Sundown. The standoff. Nobody blinks. Nobody has credits to blink with.": [
+    "day08"
+  ],
+  "A neutral party enters.": [
+    "day08"
+  ],
+  "By nightfall, the tumbleweed had founded a fourth tribe. It is growing.": [
+    "day08"
+  ],
+  "Fortress Arcade": [
+    "ui"
+  ],
+  "Board the windows. Guard the cabinets.": [
+    "ui"
+  ],
+  "NO ENTRY": [
+    "day09"
+  ],
+  "(DURING MAINTENANCE)": [
+    "day09"
+  ],
+  "HOLD": [
+    "day09"
+  ],
+  "SALVAGED": [
+    "day09"
+  ],
+  "(probably works)": [
+    "day09"
+  ],
+  "SCAV": [
+    "day09"
+  ],
+  "Day {0}. The arcade must be defended. From what, nobody is sure.": [
+    "day09"
+  ],
+  "Planks are applied. Then more planks. Planks are a love language.": [
+    "day09"
+  ],
+  "Every window. Every crack. Every door.": [
+    "day09"
+  ],
+  "Dust on the horizon.": [
+    "day09"
+  ],
+  "The Scavengers. They roam the wastes salvaging anything with a button.": [
+    "day09"
+  ],
+  "Today's haul: one cabinet, sixteen slider keys, and a steering wheel. “Close enough.”": [
+    "day09"
+  ],
+  "The prize must go inside.": [
+    "day09"
+  ],
+  "The fortress has proven impenetrable. Including to its owners.": [
+    "day09"
+  ],
+  "The Radio": [
+    "ui"
+  ],
+  "Rumors crackle through the static.": [
+    "ui"
+  ],
+  "Day {0}. Night. The survivors gather around the last working radio in the district.": [
+    "day10"
+  ],
+  "One of them volunteered to be the antenna. Eleven hours ago.": [
+    "day10"
+  ],
+  "“…kzzt… status page… kzzt… soon™…”": [
+    "day10"
+  ],
+  "SOON™. The most beautiful word in the language.": [
+    "day10"
+  ],
+  "The antenna celebrated too.": [
+    "day10"
+  ],
+  "Soon™ is not a date. Soon™ is a feeling.": [
+    "day10"
+  ],
+  "They will listen again tomorrow. The antenna has been asked to stop having feelings.": [
+    "day10"
+  ],
+  "Campfire Legends": [
+    "ui"
+  ],
+  "Tell us again about the All Perfect, grandpa.": [
+    "ui"
+  ],
+  "ALL PERFECT": [
+    "day11"
+  ],
+  "RATING {0}": [
+    "day11"
+  ],
+  "GRANDPA'S RATING": [
+    "day11"
+  ],
+  "Day {0}. The wasteland, after dark. The young gather to hear the old stories.": [
+    "day11"
+  ],
+  "“Long ago, in the Before Times, there was a thing called… the All Perfect.”": [
+    "day11"
+  ],
+  "“Every note. Every slide. Perfect. Grown adults wept in public. It was beautiful.”": [
+    "day11"
+  ],
+  "“And above all things… there was the Rating.”": [
+    "day11"
+  ],
+  "“A number. It told you exactly how much you mattered.”": [
+    "day11"
+  ],
+  "“Grandpa, what was YOUR rating?”": [
+    "day11"
+  ],
+  "“…That's enough stories for tonight.”": [
+    "day11"
+  ],
+  "The legend endures. The receipts, conveniently, were lost with the server.": [
+    "day11"
+  ],
+  "(UNVERIFIED)": [
+    "day11"
+  ],
+  "The Shambling": [
+    "ui"
+  ],
+  "Raaatiiing…": [
+    "ui"
+  ],
+  "Day {0}. Dusk falls on the former entertainment district.": [
+    "day12"
+  ],
+  "The afflicted emerge. Studies confirm they do not want brains. Only rating.": [
+    "day12"
+  ],
+  "They tap at notes no one else can see. Their timing is, admittedly, still perfect.": [
+    "day12"
+  ],
+  "A civilian. She has never played a rhythm game. She does not know how lucky she is.": [
+    "day12"
+  ],
+  "Experts advise: move slowly. Avoid eye contact. Never mention your score.": [
+    "day12"
+  ],
+  "Then her phone played a full-combo jingle.": [
+    "day12"
+  ],
+  "Survival tip: silence your notifications.": [
+    "day12"
+  ],
+  "Cardboard Cabinet": [
+    "ui"
+  ],
+  "If the server won't come to us, we'll build our own.": [
+    "ui"
+  ],
+  "CABINET v{0}": [
+    "day13"
+  ],
+  "□ box": [
+    "day13"
+  ],
+  "○ screen?": [
+    "day13"
+  ],
+  "Day {0}. The engineers convene. If the server will not come to us, we will build our own.": [
+    "day13"
+  ],
+  "Materials: nine boxes, one marker, zero networking experience.": [
+    "day13"
+  ],
+  "Load-bearing tape. Structural optimism.": [
+    "day13"
+  ],
+  "The screen is drawn by hand. It says exactly what everyone needs to hear.": [
+    "day13"
+  ],
+  "The first credit. A historic moment for independent infrastructure.": [
+    "day13"
+  ],
+  "Post-launch review: the server is experiencing unexpected gravity.": [
+    "day13"
+  ],
+  "The screen, to its credit, still says ONLINE.": [
+    "day13"
+  ],
+  "(trust me)": [
+    "day13"
+  ],
+  "SOS": [
+    "ui"
+  ],
+  "Spelled out in arcade cards for the sky to see.": [
+    "ui"
+  ],
+  "HAVE YOU TRIED": [
+    "day14"
+  ],
+  "TURNING IT OFF": [
+    "day14"
+  ],
+  "AND ON AGAIN?": [
+    "day14"
+  ],
+  "Day {0}. A rooftop. The survivors attempt contact with the outside world.": [
+    "day14"
+  ],
+  "The message must be visible from the sky. They use the only resource left in abundance.": [
+    "day14"
+  ],
+  "Fifty-four arcade cards. Combined balance: unreachable.": [
+    "day14"
+  ],
+  "A sound. A machine. A sign from above.": [
+    "day14"
+  ],
+  "They wave with the energy of a final-stage combo.": [
+    "day14"
+  ],
+  "It did not stop. But it did leave a message.": [
+    "day14"
+  ],
+  "Tech support has been reached.": [
+    "day14"
+  ],
+  "Rescue is not coming. But the advice is solid.": [
+    "day14"
+  ],
+  "The Worship": [
+    "ui"
+  ],
+  "Hear us, o gods of the arcade.": [
+    "ui"
+  ],
+  "Day {0}. Beneath the old shopping mall, a new faith has taken root.": [
+    "day15"
+  ],
+  "The congregation kneels before the Three: the Bear, the Penguin, and the Star.": [
+    "day15"
+  ],
+  "The liturgy is simple. It is mostly the word “please”.": [
+    "day15"
+  ],
+  "The High Chorister begs for a sign. Any sign. A loading bar would do.": [
+    "day15"
+  ],
+  "And lo, a light from above.": [
+    "day15"
+  ],
+  "The light is Kevin. Kevin brought a flashlight.": [
+    "day15"
+  ],
+  "Kevin's arm is tired. The gods remain silent.": [
+    "day15"
+  ],
+  "The Offering": [
+    "ui"
+  ],
+  "The gods demand coins. Obviously.": [
+    "ui"
+  ],
+  "Day {0}. The elders have determined the gods are hungry. For coins, obviously.": [
+    "day16"
+  ],
+  "Each pilgrim gives what they can. Mostly coins. One ramen-shop loyalty card.": [
+    "day16"
+  ],
+  "Arcade cards are offered too. Their stored credits were going nowhere anyway.": [
+    "day16"
+  ],
+  "The sky answers.": [
+    "day16"
+  ],
+  "For one frame, it was ONLINE.": [
+    "day16"
+  ],
+  "Then it was not.": [
+    "day16"
+  ],
+  "Someone suggests more coins. The motion carries unanimously.": [
+    "day16"
+  ],
+  "Scientists remind the faithful that lightning is not a network protocol.": [
+    "day16"
+  ],
+  "BOOTING…": [
+    "day16",
+    "day30"
+  ],
+  "Market Crash": [
+    "ui"
+  ],
+  "Arcade card futures hit rock bottom.": [
+    "ui"
+  ],
+  "RARE ▼{0}%   GOLD ▼{1}%   EVENT ▼{2}%   COMMON ▼{3}%   PLUSH BEAR ▲{4}%   SERVER: DOWN   ": [
+    "day17"
+  ],
+  "Day {0}. The Arcade Card Exchange. Where value is set by vibes and rumor.": [
+    "day17"
+  ],
+  "Limited-edition cards trade at a premium. Their titles are, after all, priceless.": [
+    "day17"
+  ],
+  "Then the morning bulletin: the server is still down. Titles cannot be displayed. Anywhere.": [
+    "day17"
+  ],
+  "Analysts call it a correction. Traders call it other things.": [
+    "day17"
+  ],
+  "RARE CARD: down ninety-seven percent. Commons are now officially coasters.": [
+    "day17"
+  ],
+  "The market has found the floor. The floor has a basement.": [
+    "day17"
+  ],
+  "One trader buys the dip. All of it. For one yen.": [
+    "day17"
+  ],
+  "★ ARCADE CARD EXCHANGE ★": [
+    "day17"
+  ],
+  "RARE CARD": [
+    "day17"
+  ],
+  "GOLD CARD": [
+    "day17"
+  ],
+  "EVENT CARD": [
+    "day17"
+  ],
+  "COMMON CARD": [
+    "day17"
+  ],
+  "PLUSH BEAR": [
+    "day17"
+  ],
+  "RARE CARD / ¥": [
+    "day17"
+  ],
+  "BULLETIN: SERVER STILL DOWN": [
+    "day17"
+  ],
+  "RARE CARD -{0}%": [
+    "day17"
+  ],
+  "SOLD: {0} CARDS": [
+    "day17"
+  ],
+  "TOTAL ¥{0}": [
+    "day17"
+  ],
+  "Exodus": [
+    "ui"
+  ],
+  "A pilgrimage to The Server.": [
+    "ui"
+  ],
+  "THE SERVER": [
+    "day18"
+  ],
+  "ALL.NET OR BUST": [
+    "day18"
+  ],
+  "Day {0}. If the server will not come back to them, they will go to it.": [
+    "day18"
+  ],
+  "They pack light: water, snacks, gloves, and one cabinet, for emotional support.": [
+    "day18"
+  ],
+  "The cabinet weighs two hundred kilos. Nobody suggested leaving it.": [
+    "day18"
+  ],
+  "Hour six. Morale is high. Water is not.": [
+    "day18"
+  ],
+  "Legends speak of a sign at the edge of the dunes.": [
+    "day18"
+  ],
+  "They found it.": [
+    "day18"
+  ],
+  "Then the wind changed. So, apparently, did the server's location.": [
+    "day18"
+  ],
+  "They will wait for the wind to make up its mind.": [
+    "day18"
+  ],
+  "The Gate": [
+    "ui"
+  ],
+  "Knock, knock. Who's there? Maintenance.": [
+    "ui"
+  ],
+  "OPEN:": [
+    "day19"
+  ],
+  "SOON™": [
+    "day19"
+  ],
+  "please wait": [
+    "day19"
+  ],
+  "Day {0}. After weeks of walking, the pilgrims arrive at The Server.": [
+    "day19"
+  ],
+  "It is very large. It is very grey. It has one door, built for one very small administrator.": [
+    "day19"
+  ],
+  "The Elder steps forward. Protocol demands three knocks.": [
+    "day19"
+  ],
+  "No answer. The building hums. It is clearly busy doing something.": [
+    "day19"
+  ],
+  "A second knock. More polite. Extremely polite.": [
+    "day19"
+  ],
+  "And then… a reply.": [
+    "day19"
+  ],
+  "It reads, in full:": [
+    "day19"
+  ],
+  "They have waited nineteen days. They can wait a little longer.": [
+    "day19"
+  ],
+  "Reclamation": [
+    "ui"
+  ],
+  "Nature has started playing instead.": [
+    "ui"
+  ],
+  "Day {0}. With the players away on pilgrimage, the arcade has been reclaimed.": [
+    "day20"
+  ],
+  "Moss carpets the floor. A sapling has set a new high score, in height.": [
+    "day20"
+  ],
+  "A visitor. Cautious. Curious. Hooved.": [
+    "day20"
+  ],
+  "She approaches the round cabinet. Instinct, perhaps. Or muscle memory from a past life.": [
+    "day20"
+  ],
+  "A single, perfect tap.": [
+    "day20"
+  ],
+  "Network error. Even nature cannot get online.": [
+    "day20"
+  ],
+  "She settles in to wait. She learned from the best.": [
+    "day20"
+  ],
+  "The Heretic": [
+    "ui"
+  ],
+  "Caught playing guest mode. The tribes must judge.": [
+    "ui"
+  ],
+  "COUNCIL OF": [
+    "day21"
+  ],
+  "ELDERS": [
+    "day21"
+  ],
+  "GUEST MODE": [
+    "day21"
+  ],
+  "♪ PLAYING ♪": [
+    "day21"
+  ],
+  "(not saved)": [
+    "day21"
+  ],
+  "GUILTY": [
+    "day21"
+  ],
+  "Day {0}. In a forgotten corner of the camp, a lone figure plays an offline cabinet.": [
+    "day21"
+  ],
+  "Guest mode. No login. No rating. No records. The tribes have a word for this.": [
+    "day21"
+  ],
+  "Heresy.": [
+    "day21"
+  ],
+  "The accused is brought before the Council of Elders, who between them hold eleven expired cards.": [
+    "day21"
+  ],
+  "The charge: enjoying the game without it counting.": [
+    "day21"
+  ],
+  "The verdict.": [
+    "day21"
+  ],
+  "Guilty. Sentenced to guest mode. Forever.": [
+    "day21"
+  ],
+  "The crowd gasps. Somehow, everyone is jealous.": [
+    "day21"
+  ],
+  "SENTENCE:": [
+    "day21"
+  ],
+  "FOREVER": [
+    "day21"
+  ],
+  "Cave Paintings": [
+    "ui"
+  ],
+  "Teaching the young what 'notes' were.": [
+    "ui"
+  ],
+  "R A T I N G": [
+    "day22"
+  ],
+  "Day {0}. Deep underground, the elders preserve the old knowledge.": [
+    "day22"
+  ],
+  "“These,” says the elder, “were notes. They fell from the sky. We hit them.”": [
+    "day22"
+  ],
+  "The children ask why. The elder says “for the combo.” Nobody knows what a combo is.": [
+    "day22"
+  ],
+  "Some notes had to be slid. This was considered normal.": [
+    "day22"
+  ],
+  "And this was the Rating. Grown adults wept before it.": [
+    "day22"
+  ],
+  "Little Mika asks if the circles were food. The lesson is over.": [
+    "day22"
+  ],
+  "The children have learned the most important thing: hitting the wall, very fast.": [
+    "day22"
+  ],
+  "The Elder's Farewell": [
+    "ui"
+  ],
+  "Remember… the… slide…": [
+    "ui"
+  ],
+  "Day {0}. The Elder has inserted his last credit.": [
+    "day23"
+  ],
+  "He raises a trembling hand. The tribe leans in for his final wisdom.": [
+    "day23"
+  ],
+  "“Remember… the… slide…”": [
+    "day23"
+  ],
+  "Nobody knows which slide. There were so many slides.": [
+    "day23"
+  ],
+  "A glowstick vigil, as their ancestors once held for the idols.": [
+    "day23"
+  ],
+  "They sway at exactly {0} BPM. It is what he would have wanted.": [
+    "day23"
+  ],
+  "“…and the hold notes. Don't let go early.”": [
+    "day23"
+  ],
+  "He has been dying like this for three days. The vigil continues.": [
+    "day23"
+  ],
+  "First Contact": [
+    "ui"
+  ],
+  "They came from the stars for one thing.": [
+    "ui"
+  ],
+  "Day {0}. The arcade is dark. The sky, however, is not.": [
+    "day24"
+  ],
+  "They crossed a thousand light-years. They passed every planet. They came for one thing.": [
+    "day24"
+  ],
+  "Not our water. Not our leaders. The slider cabinet.": [
+    "day24"
+  ],
+  "The visitors kneel before it. Their civilization, too, has rhythm games.": [
+    "day24"
+  ],
+  "And then, for the first time in {0} days, a screen said ONLINE. For them.": [
+    "day24"
+  ],
+  "For humans: NETWORK ERROR. Region-locked by the cosmos itself.": [
+    "day24"
+  ],
+  "They left no message. Not even a credit.": [
+    "day24"
+  ],
+  "NETWORK ERROR": [
+    "day24",
+    "ui"
+  ],
+  "region: EARTH": [
+    "day24"
+  ],
+  "not supported": [
+    "day24"
+  ],
+  "Wasteland Games": [
+    "ui"
+  ],
+  "Competitive air-rhythm. Judged by vibes.": [
+    "ui"
+  ],
+  "WASTELAND GAMES": [
+    "day25"
+  ],
+  "VIBES": [
+    "day25"
+  ],
+  "SS+": [
+    "day25"
+  ],
+  "Day {0}. The Wasteland Games. Admission: one bottle cap.": [
+    "day25"
+  ],
+  "The sport: competitive air-rhythm. The chart: imaginary. The stakes: very real.": [
+    "day25"
+  ],
+  "The challenger answers with an imaginary slide. The crowd pretends to understand.": [
+    "day25"
+  ],
+  "No notes. No score. No sound. Only pure, unverifiable skill.": [
+    "day25"
+  ],
+  "The judges confer. Scoring is rigorous and entirely made up.": [
+    "day25"
+  ],
+  "A winner. First prize: one coin.": [
+    "day25"
+  ],
+  "There is nothing left to spend it on. The crowd goes wild anyway.": [
+    "day25"
+  ],
+  "The Archive": [
+    "ui"
+  ],
+  "For future generations: proof that we once had ratings.": [
+    "ui"
+  ],
+  "HERE LIES": [
+    "day26"
+  ],
+  "MY STREAK": [
+    "day26"
+  ],
+  "R.I.P.": [
+    "day26"
+  ],
+  "FRIEND": [
+    "day26"
+  ],
+  "CODES": [
+    "day26"
+  ],
+  "IN MEMORY": [
+    "day26"
+  ],
+  "OF EVENT": [
+    "day26"
+  ],
+  "POINTS": [
+    "day26"
+  ],
+  "GUEST": [
+    "day26"
+  ],
+  "MODE": [
+    "day26"
+  ],
+  "(still alive?)": [
+    "day26"
+  ],
+  "DAILY": [
+    "day26"
+  ],
+  "LOGIN": [
+    "day26"
+  ],
+  "BONUS": [
+    "day26"
+  ],
+  "TIME CAPSULE": [
+    "day26"
+  ],
+  "do not open": [
+    "day26"
+  ],
+  "OUR RATING": [
+    "day26"
+  ],
+  "DO NOT OPEN": [
+    "day26"
+  ],
+  "UNTIL THE": [
+    "day26"
+  ],
+  "SERVER RETURNS": [
+    "day26"
+  ],
+  "— SCORE CARD —": [
+    "day26"
+  ],
+  "PLAYER ★★★": [
+    "day26"
+  ],
+  "RATING": [
+    "day26"
+  ],
+  "proof we existed": [
+    "day26"
+  ],
+  "Day {0}. The Historical Society convenes. Hats are mandatory. So is grief.": [
+    "day26"
+  ],
+  "The artifact: a printed scorecard. RATING {0}. Proof that we existed.": [
+    "day26"
+  ],
+  "It is sealed in a capsule, for whoever comes after us.": [
+    "day26"
+  ],
+  "Future civilizations will dig it up and ask what a rating was. We will not be there to lie.": [
+    "day26"
+  ],
+  "A moment of silence.": [
+    "day26"
+  ],
+  "Then a second moment, because the first one was not serious enough.": [
+    "day26"
+  ],
+  "Estimated opening date: never. The Society considers this optimistic.": [
+    "day26"
+  ],
+  "False Dawn": [
+    "ui"
+  ],
+  "IT'S BACK! (It is not back.)": [
+    "ui"
+  ],
+  "DRINKS": [
+    "day27"
+  ],
+  "SERVER WATCH": [
+    "day27"
+  ],
+  "day {0}": [
+    "day27",
+    "day31"
+  ],
+  "nothing yet": [
+    "day27"
+  ],
+  "Day {0}. Dawn. The survivors sleep outside the arcade, as is now tradition.": [
+    "day27"
+  ],
+  "“IT'S BACK!! IT'S BAAACK!!”": [
+    "day27"
+  ],
+  "Nobody asks what is back. Nobody needs to.": [
+    "day27"
+  ],
+  "It was the router. One green light. Blinking.": [
+    "day27"
+  ],
+  "The light means “connected.” To what, no one can say.": [
+    "day27"
+  ],
+  "The messenger looks around for support.": [
+    "day27"
+  ],
+  "The light is still blinking. It will always be blinking. It means nothing.": [
+    "day27"
+  ],
+  "Kaiju": [
+    "ui"
+  ],
+  "From the landfill of expired cards, it rises.": [
+    "ui"
+  ],
+  "Day {0}. The landfill. Final resting place of a million expired arcade cards.": [
+    "day28"
+  ],
+  "Something stirs beneath them.": [
+    "day28"
+  ],
+  "It is made of every card ever thrown away. Each one still had credits on it.": [
+    "day28"
+  ],
+  "It heads for the city. The city is very small. Budget cuts.": [
+    "day28"
+  ],
+  "But it is not here to destroy. It is searching, like us, for a working cabinet.": [
+    "day28"
+  ],
+  "NETWORK ERROR. It has never felt more like one of us.": [
+    "day28"
+  ],
+  "The players sit with it. It can't play either. It fits right in.": [
+    "day28"
+  ],
+  "Nuclear Winter": [
+    "ui"
+  ],
+  "The power supplies are the only warmth left.": [
+    "ui"
+  ],
+  "NO SIGNAL": [
+    "day29"
+  ],
+  "PSU: OK": [
+    "day29"
+  ],
+  "Day {0}. Winter came early. Possibly forever. Hard to tell without the event calendar.": [
+    "day29"
+  ],
+  "The cabinets can no longer connect. But their power supplies still run warm.": [
+    "day29"
+  ],
+  "Cabinet #{0} now provides heat, light, and a modest kitchen.": [
+    "day29"
+  ],
+  "They tell stories of “warm-up songs.” It is not the same kind of warm.": [
+    "day29"
+  ],
+  "Then the power supply on Cabinet #{0} gave out.": [
+    "day29"
+  ],
+  "The colony migrates. Slowly. Together. Nobody lets go of anybody.": [
+    "day29"
+  ],
+  "Cabinet #{0} has {1}% fan noise and {2}% hope.": [
+    "day29"
+  ],
+  "The Flicker": [
+    "ui"
+  ],
+  "The screens awaken. Is this… it?": [
+    "ui"
+  ],
+  "DAYS": [
+    "day30"
+  ],
+  "TO BE CONTINUED": [
+    "day30"
+  ],
+  "Day {0}. One month. The arcade sleeps. So do its last residents.": [
+    "day30"
+  ],
+  "Then, at {0}:{1} AM, a flicker.": [
+    "day30"
+  ],
+  "The logo. THE LOGO. Or at least a generic, legally distinct one.": [
+    "day30"
+  ],
+  "Thirty days of chaos, and the queue forms in seconds. Nobody cuts. Civilization is back.": [
+    "day30"
+  ],
+  "MAINTENANCE EXTENDED.": [
+    "day30"
+  ],
+  "They fell exactly as they had queued: in order, and with respect.": [
+    "day30"
+  ],
+  "Will ALL.Net return? Will the players ever stand again? Will the logo come back?": [
+    "day30"
+  ],
+  "To be continued…": [
+    "day30"
+  ],
+  "EXTENDED": [
+    "day30"
+  ],
+  "see you… later": [
+    "day30"
+  ],
+  "Still Down": [
+    "ui"
+  ],
+  "The chroniclers have run out of ink.": [
+    "day31",
+    "ui"
+  ],
+  "STILL": [
+    "day31"
+  ],
+  "OFFLINE": [
+    "day31"
+  ],
+  "ALL.NET": [
+    "day31"
+  ],
+  "Day {0}.": [
+    "day31"
+  ],
+  "Somewhere, a status page still says “investigating”.": [
+    "day31"
+  ],
+  "He said he'd wait until it came back online. He's a man of his word.": [
+    "day31"
+  ],
+  "Unmute": [
+    "ui"
+  ],
+  "Even this page couldn't connect. Fitting.": [
+    "ui"
+  ],
+  "DAYS WITHOUT\nALL.NET\n{n}": [
+    "day31"
+  ]
+}

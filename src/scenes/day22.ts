@@ -156,8 +156,9 @@ const scene: SceneDef = {
 
     // Wall torches
     const torches = [torch(), torch()];
-    torches[0].position.set(-5, 0, -4.4);
-    torches[1].position.set(5, 0, -4.4);
+    // against the wall, out of the elder's walkway
+    torches[0].position.set(-5, 0, -5.6);
+    torches[1].position.set(5, 0, -5.6);
     torches.forEach((tc) => scene.add(tc));
     const tFlames = torches.map((tc) => tc.children[1] as THREE.Mesh);
     const tLights = torches.map((tc) => tc.children[2] as THREE.PointLight);
@@ -170,11 +171,11 @@ const scene: SceneDef = {
     const elder = new Player({ skin: 0xc98e66, shirt: 0x7a5c3a, pants: 0x4a3a2a, hairStyle: "bald", accessories: ["beard", "robe"], robe: 0x5c4326 }, 2210);
     scene.add(elder.root);
     const hTorch = new THREE.Group();
-    hTorch.add(box(0.05, 0.6, 0.05, 0x5c3a1e, 0, -0.05, 0));
+    hTorch.add(box(0.05, 0.6, 0.05, 0x5c3a1e, 0, 0.25, 0)); // gripped at its base
     const hFlame = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.25, 5), glow(0xffa030));
-    hFlame.position.y = 0.35;
+    hFlame.position.y = 0.65;
     hTorch.add(hFlame);
-    hTorch.rotation.x = -Math.PI / 2; // points along the forearm
+    hTorch.rotation.x = Math.PI / 2; // sticks out of the fist toward the arm's front, so it stays upright-ish
     elder.handR.add(hTorch);
     const elderLight = new THREE.PointLight(0xffa050, 5, 7, 1.6);
     scene.add(elderLight);
@@ -244,7 +245,7 @@ const scene: SceneDef = {
       kids.forEach((k, i) => {
         const [x, z] = kidPos[i];
         const rushK = smooth(seg(t, 30 + i * 0.25, 31.5 + i * 0.25));
-        const targetX = [-3.3, -2.4, -0.4, 0.5, 2.4, 3.2][i];
+        const targetX = [-3.3, -2.4, 0.1, 0.9, 2.4, 3.2][i]; // (lanes that miss the big rock)
         if (t < 30) {
           k.root.position.set(x, 0, z);
           k.face(lerp(x, -2.8 + (t > 16 ? 2.8 : 0) + (t > 22.5 ? 2.8 : 0), 0.5), -6);

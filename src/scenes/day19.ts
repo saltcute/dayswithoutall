@@ -25,7 +25,7 @@ const scene: SceneDef = {
     const FZ = -4; // front face z
     const bw = 34, bh = 14, bd = 18;
     scene.add(box(bw, bh, bd, 0x8a8f98, 0, bh / 2, FZ - bd / 2));
-    for (let i = 0; i < 17; i++) scene.add(box(0.35, bh, 0.3, 0x7a7f88, -bw / 2 + 1 + i * 2, bh / 2, FZ + 0.1));
+    for (let i = 0; i < 17; i++) if (i !== 8) scene.add(box(0.35, bh, 0.3, 0x7a7f88, -bw / 2 + 1 + i * 2, bh / 2, FZ + 0.1)); // (no pilaster across the door)
     scene.add(box(bw + 0.4, 0.6, bd + 0.4, 0x6e737c, 0, bh + 0.3, FZ - bd / 2));
     // vents
     for (let i = 0; i < 8; i++) {
@@ -92,8 +92,13 @@ const scene: SceneDef = {
 
     // --- Pilgrims ---
     const elder = new Player({ accessories: ["robe", "beard", "backpack"], robe: 0x8d6e4c, hairStyle: "bald", skin: 0xe8b894 }, 1900);
-    const staff = box(0.06, 1.8, 0.06, 0x6b4423, 0, -0.2, 0.05);
+    // the staff runs through the left fist and is kept upright in update()
+    const staff = box(0.06, 1.8, 0.06, 0x6b4423);
+    staff.rotation.order = "ZYX"; // inverse of the arm's XYZ rotation
     elder.handL.add(staff);
+    const STAFF_ARM = new THREE.Euler(-0.5, 0, 0.25); // hand forward and out, clear of the robe
+    const staffUp = new THREE.Vector3();
+    const hL = new THREE.Vector3(), hR = new THREE.Vector3(), fwd = new THREE.Vector3();
     scene.add(elder.root);
     const flock = Array.from({ length: 8 }, (_, i) => {
       const p = new Player({ shirt: r.pick([0xa5734f, 0x6b705c, 0xb08968, 0x7f5539, 0x9c6644, 0x5e548e]), accessories: ["backpack", i % 2 ? "towel" : "gloves"] }, 1910 + i);
@@ -133,7 +138,8 @@ const scene: SceneDef = {
       // the elder
       const ek = smooth(seg(t, 0, 7.5));
       const step = smooth(seg(t, 11.8, 13.2));
-      const ex = 0.4 * step, ez = lerp(lerp(15, 1.4, ek), FZ + 0.75, step);
+      // the elder leads, ahead of the flock, then steps up to the door (right fist lands on it)
+      const ex = 0.15 * step, ez = lerp(lerp(14.6, -1.6, ek), FZ + 0.75, step);
       elder.root.position.set(ex, 0, ez);
       elder.root.rotation.y = Math.PI;
       if (ek < 1 || (step > 0 && step < 1)) elder.pose("walk", t);
@@ -155,8 +161,24 @@ const scene: SceneDef = {
         if (t < 35) {
           elder.armR.rotation.x = elder.armL.rotation.x = -1.4;
           elder.head.rotation.x = 0.35;
+        } else {
+          // dejected: the note held low in both hands
+          elder.armR.rotation.x = elder.armL.rotation.x = -0.75;
+          elder.armL.rotation.z = -0.12;
+          elder.armR.rotation.z = 0.12;
         }
       }
+      // staff: upright through the left fist while it is carried
+      if (t < PICK - 0.3) {
+        elder.armL.rotation.copy(STAFF_ARM);
+        staff.rotation.set(-STAFF_ARM.x, 0, -STAFF_ARM.z);
+        // centre 0.1 above the fist (fist ~0.8 up), so the foot is just above the ground
+        staff.position.copy(staffUp.set(0, 0.1, 0).applyEuler(staff.rotation));
+      }
+      elder.root.updateMatrixWorld(true);
+      elder.handL.getWorldPosition(hL);
+      elder.handR.getWorldPosition(hR);
+      fwd.set(Math.sin(elder.root.rotation.y), 0, Math.cos(elder.root.rotation.y));
 
       // the note: slides out under the door, gets picked up, shown to all
       note.visible = t > SLIP;
@@ -165,13 +187,16 @@ const scene: SceneDef = {
         note.position.set(-0.25, 0.015, FZ + 0.1 + nk * 0.55);
         note.rotation.set(-Math.PI / 2, 0, 0.15 * nk);
       } else if (t < PICK + 0.6) {
+        // up off the floor into the right hand
         const nk = smooth(seg(t, PICK, PICK + 0.6));
-        note.position.set(lerp(-0.25, ex, nk), lerp(0.015, 1.1, nk), FZ + 0.65 + nk * 0.2);
-        note.rotation.set(-Math.PI / 2 * (1 - nk), 0, 0);
+        note.position.set(lerp(-0.25, hR.x, nk), lerp(0.015, hR.y, nk), lerp(FZ + 0.65, hR.z, nk));
+        note.rotation.set(-Math.PI / 2 * (1 - nk), Math.PI * nk, 0);
       } else {
-        const tk = smooth(seg(t, PICK + 0.6, PICK + 1.4));
-        note.position.set(ex, t < 35 ? 1.28 : 0.85, ez + lerp(-0.5, 0.52, tk));
-        note.rotation.set(t < 35 ? 0 : -0.8, Math.PI * (1 - tk), 0);
+        // held up between both fists, facing out from the elder as he turns
+        note.position.addVectors(hL, hR).multiplyScalar(0.5).addScaledVector(fwd, t < 35 ? 0 : 0.04);
+        if (t < 35) note.position.y += 0.03;
+        else note.position.y -= 0.1;
+        note.rotation.set(t < 35 ? 0 : -0.5, elder.root.rotation.y, 0);
       }
 
       // security camera pans, notices them, looks away
@@ -223,8 +248,8 @@ const scene: SceneDef = {
       { t: 22.6, pos: [-2.2, 0.8, -2.9], look: [-0.2, 0.4, FZ + 0.2], fov: 45 },
       { t: 28.4, pos: [-2.0, 0.55, -3.0], look: [-0.25, 0.1, FZ + 0.4], fov: 45 },
       { t: 29.4, pos: [-1.2, 2.2, 4], look: [0, 1.2, -2.5], fov: 50 },
-      { t: 30.4, pos: [0.4, 1.3, -1.6], look: [0.4, 1.28, -2.9], fov: 40 },
-      { t: 34.4, pos: [0.4, 1.3, -1.8], look: [0.4, 1.28, -2.9], fov: 40 },
+      { t: 30.4, pos: [0.15, 1.3, -1.6], look: [0.15, 1.28, -2.9], fov: 40 },
+      { t: 34.4, pos: [0.15, 1.3, -1.8], look: [0.15, 1.28, -2.9], fov: 40 },
       { t: 35, pos: [0, 2.2, 8], look: [0, 3, -4], fov: 55 },
       { t: 40, pos: [0, 2.5, 26], look: [0, 6, -4], fov: 55 },
     ]);

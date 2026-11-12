@@ -1,21 +1,11 @@
 import "./style.css";
 import { currentDay } from "../shared/dayCalc";
 import { toWords } from "../shared/numberWords";
+import { LOCALE_NAMES } from "../shared/i18n";
 import { metaFor } from "../shared/sceneMeta";
 import { Stage } from "./engine/stage";
+import { getCookie, initLocale, LOCALES, type Locale, setCookie, setCollectContext, switchLocale, tr } from "./i18n";
 import { loadScene } from "./scenes";
-
-declare global {
-  interface Window {
-    __DAY__?: number;
-    __TODAY__?: number;
-    __HOST_SUFFIX__?: string;
-    __stage?: Stage;
-    __ready?: boolean;
-    /** Set by test scripts to keep the start screen up. */
-    __noAutoplay?: boolean;
-  }
-}
 
 const params = new URLSearchParams(location.search);
 const today = window.__TODAY__ ?? (Number(params.get("today")) || currentDay(Date.now()));
@@ -28,16 +18,27 @@ function urlFor(n: number) {
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
-const meta = metaFor(day);
 const el = (html: string) => {
   const t = document.createElement("template");
   t.innerHTML = html.trim();
   return t.content.firstElementChild as HTMLElement;
 };
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+/** Translate, escape, then swap {name} placeholders for raw HTML snippets. */
+const trHtml = (key: string, html: Record<string, string>) => {
+  const marks: Record<string, string> = {};
+  for (const k of Object.keys(html)) marks[k] = `\u0000${k}\u0000`;
+  let out = esc(tr(key, marks));
+  for (const [k, v] of Object.entries(html)) out = out.replace(`\u0000${k}\u0000`, v);
+  return out;
+};
+
+const locale = await initLocale();
+const raw = metaFor(day);
+const meta = { title: tr(raw.title), subtitle: tr(raw.subtitle) };
 
 const app = document.getElementById("app")!;
-document.title = `Day ${day} without ALL.Net: ${meta.title}`;
+document.title = tr("Day {n} without ALL.Net: {title}", { n: day, title: meta.title });
 
 const stageEl = el(`<div id="stage" aria-hidden="true"></div>`);
 const flashEl = el(`<div class="flash"></div>`);
@@ -45,60 +46,61 @@ const captionEl = el(`<div class="caption" role="status" aria-live="polite"></di
 const hud = el(`
   <div class="hud" role="heading" aria-level="1">
     <div class="stripe"></div>
-    <div>THIS ARCADE HAS GONE<small>without incident*</small></div>
-    <div class="num" aria-label="${day} days">${pad(day)}</div>
-    <div>DAYS WITHOUT<br>ALL.NET<small>*the incident is ongoing</small></div>
+    <div>${esc(tr("THIS ARCADE HAS GONE"))}<small>${esc(tr("without incident*"))}</small></div>
+    <div class="num" aria-label="${esc(tr("{n} days", { n: day }))}">${pad(day)}</div>
+    <div>${esc(tr("DAYS WITHOUT"))}<br>ALL.NET<small>${esc(tr("*the incident is ongoing"))}</small></div>
   </div>`);
 const controls = el(`
   <div class="controls">
-    <button class="icon-btn" id="replay" title="Replay (R)" aria-label="Replay scene">↻</button>
-    <button class="icon-btn" id="mute" title="Mute (M)" aria-label="Mute">🔊</button>
+    <label class="lang-wrap" title="${esc(tr("Language"))}">
+      <span aria-hidden="true">🌐</span>
+      <select id="lang" aria-label="${esc(tr("Language"))}">
+        ${LOCALES.map((l) => `<option value="${l}"${l === locale ? " selected" : ""}>${LOCALE_NAMES[l]}</option>`).join("")}
+      </select>
+    </label>
+    <button class="icon-btn" id="replay" title="${esc(tr("Replay (R)"))}" aria-label="${esc(tr("Replay scene"))}">↻</button>
+    <button class="icon-btn" id="mute" title="${esc(tr("Mute (M)"))}" aria-label="${esc(tr("Mute"))}">🔊</button>
   </div>`);
 const nav = el(`
-  <nav class="nav" aria-label="Day navigation">
-    ${day > 1 ? `<a class="prev" href="${urlFor(day - 1)}" rel="prev">◀ Day ${day - 1}</a>` : `<span class="slot"></span>`}
-    <div class="cur"><b>DAY ${day}</b><i>${esc(meta.title)}</i></div>
-    ${day < today ? `<a class="next" href="${urlFor(day + 1)}" rel="next">Day ${day + 1} ▶</a>` : `<span class="slot next live">● LIVE</span>`}
+  <nav class="nav" aria-label="${esc(tr("Day navigation"))}">
+    ${day > 1 ? `<a class="prev" href="${urlFor(day - 1)}" rel="prev">${esc(tr("◀ Day {n}", { n: day - 1 }))}</a>` : `<span class="slot"></span>`}
+    <div class="cur"><b>${esc(tr("DAY {n}", { n: day }))}</b><i>${esc(meta.title)}</i></div>
+    ${day < today ? `<a class="next" href="${urlFor(day + 1)}" rel="next">${esc(tr("Day {n} ▶", { n: day + 1 }))}</a>` : `<span class="slot next live">${esc(tr("● LIVE"))}</span>`}
   </nav>`);
 const titlecard = el(`
   <div class="titlecard"><div class="inner">
-    <div class="d">DAY ${day}</div><div class="t">${esc(meta.title)}</div><div class="s">${esc(meta.subtitle)}</div>
+    <div class="d">${esc(tr("DAY {n}", { n: day }))}</div><div class="t">${esc(meta.title)}</div><div class="s">${esc(meta.subtitle)}</div>
   </div></div>`);
 const overlay = el(`
   <div class="overlay hide ended" aria-hidden="true"><div class="box">
-    <div class="eyebrow">● ALL.Net status: unreachable</div>
-    <h1>Day <span>${day}</span>:<br>${esc(meta.title)}</h1>
+    <div class="eyebrow">${esc(tr("● ALL.Net status: unreachable"))}</div>
+    <h1>${trHtml("Day {n}:", { n: `<span>${day}</span>` })}<br>${esc(meta.title)}</h1>
     <p>${esc(meta.subtitle)}</p>
-    <button class="start" aria-label="Replay scene">↻ REPLAY</button>
-    <div class="fine">Sound on for maximum despair. Fan-made parody; not affiliated with SEGA.</div>
+    <button class="start" aria-label="${esc(tr("Replay scene"))}">${esc(tr("↻ REPLAY"))}</button>
+    <div class="fine">${esc(tr("Sound on for maximum despair. Fan-made parody; not affiliated with SEGA."))}</div>
   </div></div>`);
 
 app.append(stageEl, flashEl, titlecard, captionEl, hud, controls, nav, overlay);
-if (day < today) app.append(el(`<div class="archive-note">📜 Archive. It is now <a href="${urlFor(today)}">Day ${today} →</a></div>`));
+if (day < today)
+  app.append(el(`<div class="archive-note">${trHtml("📜 Archive. It is now {link}", { link: `<a href="${urlFor(today)}">${esc(tr("Day {n} →", { n: today }))}</a>` })}</div>`));
+
+controls.querySelector<HTMLSelectElement>("#lang")!.onchange = (e) => switchLocale((e.target as HTMLSelectElement).value as Locale);
 
 const stage = new Stage(stageEl, captionEl, flashEl);
 window.__stage = stage;
 
-let muted = false;
-try {
-  muted = localStorage.getItem("dwa:muted") === "1";
-} catch {
-  /* storage unavailable */
-}
+// Mute preference lives in a cookie so it carries across all day subdomains.
+let muted = getCookie("muted") === "1";
 const muteBtn = controls.querySelector<HTMLButtonElement>("#mute")!;
 const applyMute = () => {
   stage.sfx.setMuted(muted);
   muteBtn.textContent = muted ? "🔇" : "🔊";
-  muteBtn.setAttribute("aria-label", muted ? "Unmute" : "Mute");
+  muteBtn.setAttribute("aria-label", tr(muted ? "Unmute" : "Mute"));
 };
 applyMute();
 muteBtn.onclick = () => {
   muted = !muted;
-  try {
-    localStorage.setItem("dwa:muted", muted ? "1" : "0");
-  } catch {
-    /* ignore */
-  }
+  setCookie("muted", muted ? "1" : "0");
   applyMute();
 };
 
@@ -111,7 +113,7 @@ const showTitle = () => {
 // then show the title screen with "Replay" ----
 const AUTOPLAY_DELAY_MS = 2000;
 const startBtn = overlay.querySelector<HTMLButtonElement>(".start")!;
-const soundHint = el(`<button class="sound-hint" hidden>🔈 Click anywhere for sound</button>`);
+const soundHint = el(`<button class="sound-hint" hidden>${esc(tr("🔈 Click anywhere for sound"))}</button>`);
 app.append(soundHint);
 let loaded = false;
 let pendingStart = false;
@@ -163,6 +165,7 @@ addEventListener("keydown", (e) => {
   else if (e.key === "r" || e.key === "R") play(true);
 });
 
+setCollectContext(`day${pad(day)}`);
 loadScene(day)
   .then(async (def) => {
     await stage.load(def, day, today);
@@ -178,5 +181,5 @@ loadScene(day)
   })
   .catch((err) => {
     console.error(err);
-    app.append(el(`<div class="fatal"><div><h2>NETWORK ERROR</h2><p>Even this page couldn't connect. Fitting.</p></div></div>`));
+    app.append(el(`<div class="fatal"><div><h2>${esc(tr("NETWORK ERROR"))}</h2><p>${esc(tr("Even this page couldn't connect. Fitting."))}</p></div></div>`));
   });

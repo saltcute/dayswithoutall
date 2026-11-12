@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { Sfx } from "../audio/sfx";
+import { trAuto } from "../i18n";
 import { lerp, seg, smooth } from "./math";
 
 export type V3 = [number, number, number];
@@ -104,7 +105,7 @@ export class Stage {
       duration: this.duration,
       update: (fn) => this.updaters.push(fn),
       at: (at, fn) => this.cues.push({ at, fn }),
-      caption: (at, text, dur = 4) => this.captions.push({ at, text, dur }),
+      caption: (at, text, dur = 4) => this.captions.push({ at, text: trAuto(text), dur }),
       cameraPath: (keys) => (this.camKeys = [...keys].sort((a, b) => a.t - b.t)),
       shake: (at, s = 0.3, dur = 0.6) => this.shakes.push({ at, s, dur }),
       flash: (at, color = "#fff", dur = 0.4) => this.flashes.push({ at, color, dur }),

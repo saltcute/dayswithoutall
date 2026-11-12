@@ -1,4 +1,8 @@
 import * as THREE from "three";
+import { cjkFonts, getLocale, trAuto } from "../i18n";
+
+/** Default display font with CJK fallbacks for the current locale. */
+export const displayFont = () => `'Arial Black', Impact, ${cjkFonts()}, sans-serif`;
 
 export interface TextStyle {
   bg?: string;            // background fill ('' = transparent)
@@ -25,7 +29,9 @@ export class TextTexture {
     this.canvas = document.createElement("canvas");
     this.canvas.width = width;
     this.canvas.height = height;
+    this.canvas.lang = getLocale();
     this.ctx = this.canvas.getContext("2d")!;
+    (this.ctx as CanvasRenderingContext2D & { lang?: string }).lang = getLocale();
     this.texture = new THREE.CanvasTexture(this.canvas);
     this.texture.colorSpace = THREE.SRGBColorSpace;
     this.texture.anisotropy = 4;
@@ -33,7 +39,7 @@ export class TextTexture {
 
   /** Draw lines of text. Skips work when nothing changed. */
   draw(lines: string | string[], style: TextStyle = {}) {
-    const arr = Array.isArray(lines) ? lines : lines.split("\n");
+    const arr = (Array.isArray(lines) ? lines : lines.split("\n")).map(trAuto);
     const key = JSON.stringify([arr, style]);
     if (key === this.last) return;
     this.last = key;
@@ -57,7 +63,7 @@ export class TextTexture {
     }
     const size = (style.size ?? 40) * s;
     const lh = size * (style.lineHeight ?? 1.15);
-    ctx.font = `${style.weight ?? "800"} ${size}px ${style.font ?? "'Arial Black', Impact, sans-serif"}`;
+    ctx.font = `${style.weight ?? "800"} ${size}px ${style.font ?? displayFont()}`;
     ctx.fillStyle = style.fg ?? "#fff";
     ctx.textAlign = style.align ?? "center";
     ctx.textBaseline = "middle";
@@ -68,10 +74,10 @@ export class TextTexture {
       let fs = size;
       while (ctx.measureText(line).width > w * 0.9 && fs > 8) {
         fs -= 2;
-        ctx.font = `${style.weight ?? "800"} ${fs}px ${style.font ?? "'Arial Black', Impact, sans-serif"}`;
+        ctx.font = `${style.weight ?? "800"} ${fs}px ${style.font ?? displayFont()}`;
       }
       ctx.fillText(line, x, y0 + i * lh);
-      ctx.font = `${style.weight ?? "800"} ${size}px ${style.font ?? "'Arial Black', Impact, sans-serif"}`;
+      ctx.font = `${style.weight ?? "800"} ${size}px ${style.font ?? displayFont()}`;
     });
     if (style.scanlines) {
       ctx.fillStyle = "rgba(0,0,0,0.18)";

@@ -68,7 +68,9 @@ const scene: SceneDef = {
       [0.4, 1.8, "huddle"], [-4.4, -3.6, "shiver"], [-5.2, -0.6, "huddle"], [3.6, -3.7, "shiver"], [5.1, 1.9, "huddle"], [-2, 2.8, "shiver"],
     ];
     const R = 0.95, cz = 0.4;
-    const ang = players.map((_, i) => (i / players.length) * Math.PI * 2 + 0.5);
+    // each one's spot in the circle faces their corner, so nobody walks through anybody
+    const slot = [0, 3, 4, 2, 1, 5];
+    const ang = players.map((_, i) => (slot[i] / players.length) * Math.PI * 2 + 0.35);
     players.forEach((p) => scene.add(p.root));
 
     sfx.ambient("arcadeDead", 0.6);
@@ -122,7 +124,7 @@ const scene: SceneDef = {
       const L = players[0];
       if (t > 28.5) {
         const k = smooth(seg(t, 28.5, 31));
-        const tx = cabs[2].group.position.x + 0.45, tz = -3.95;
+        const tx = cabs[2].group.position.x + 0.45, tz = -3.78;
         L.travel(lonely[0][0], lonely[0][1], tx, tz, k);
         if (k < 1) {
           L.pose("walk", t * 0.5);

@@ -115,7 +115,7 @@ const scene: SceneDef = {
     // --- Timeline ---
     // 0-20 crawl (with a collapse at 9-11) | 20-22 reaches, stands up | 22.2 the truth
     // 23-26 button: buzzer | 27-29 sinks down | 29-36 leans on it, at peace
-    const zAt = (t: number) => keys(t, [[0, 8], [9, 1.5], [11, 1.5], [20, GOAL_Z + 1.6]], (x) => x);
+    const zAt = (t: number) => keys(t, [[0, 8], [9, 1.5], [11, 1.5], [20, GOAL_Z + 2.0]], (x) => x) - seg(t, 20, 21) * 0.4; // crawl stops short of the cab, then he steps up
     ctx.update((t) => {
       const z = zAt(t);
       p.root.position.set(Math.sin(t * 0.5) * 0.15, 0, z);
@@ -149,7 +149,7 @@ const scene: SceneDef = {
         p.head.rotation.x = 0.5;
       } else {
         // sitting, back against the machine, at peace
-        p.root.position.z = GOAL_Z + 0.7;
+        p.root.position.z = GOAL_Z + 0.77;
         p.root.rotation.y = 0;
         p.pose("sitFloor", t);
         p.torso.rotation.x = -0.15;

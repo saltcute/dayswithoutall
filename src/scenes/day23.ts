@@ -30,6 +30,8 @@ const scene: SceneDef = {
     for (let i = 0; i < 6; i++) {
       const rk = rock(r.range(0.3, 0.6), 2310 + i, 0x4a4f63);
       rk.position.set(r.range(-6, 6), rk.position.y, r.range(-7, -3.5));
+      // keep rocks out from under the kneeling mourners' legs
+      if (Math.abs(rk.position.x) < 2.5) rk.position.z = Math.min(rk.position.z, -4.4);
       scene.add(rk);
     }
 
@@ -40,18 +42,19 @@ const scene: SceneDef = {
     c2.position.set(0, 0, -1.65);
     bed.add(c1, c2);
     bed.add(box(0.8, 0.07, 2.2, 0x8b5a2b, 0, 0.53, -0.9));
-    bed.add(box(0.84, 0.05, 1.3, 0x7b2d26, 0, 0.62, -0.45));
-    const pillow = box(0.5, 0.12, 0.3, 0xe9e1d0, 0, 0.62, -1.75);
+    // a thick blanket over the elder's legs (it covers them rather than slicing through them)
+    bed.add(box(0.84, 0.3, 1.3, 0x7b2d26, 0, 0.715, -0.45));
+    const pillow = box(0.5, 0.05, 0.3, 0xe9e1d0, 0, 0.59, -1.65);
     bed.add(pillow);
     scene.add(bed);
 
     const elder = new Player({ skin: 0xc98e66, shirt: 0x7a5c3a, pants: 0x4a3a2a, hairStyle: "bald", accessories: ["beard"] }, 2210);
-    elder.root.position.set(0, 0.48, 0.05);
+    elder.root.position.set(0, 0.575, 0.05); // back resting on the planks
     scene.add(elder.root);
 
     const cA = candle(), cB = candle();
-    cA.position.set(0.7, 0, -2.1);
-    cB.position.set(-0.7, 0, -2.1);
+    cA.position.set(1.0, 0, -2.2); // clear of the bowing mourners' hands
+    cB.position.set(-1.0, 0, -2.2);
     scene.add(cA, cB);
     const cLights = [cA, cB].map((c) => c.children[2] as THREE.PointLight);
     const cFlames = [cA, cB].map((c) => c.children[1] as THREE.Mesh);
@@ -61,7 +64,7 @@ const scene: SceneDef = {
     const glowCols = [0x39ff14, 0xff3df2, 0x2ef2ff, 0xfff23a, 0xff7a1a, 0x39ff14, 0x9b5de5, 0xff3df2];
     const mourners = Array.from({ length: N }, (_, i) => {
       const a = -Math.PI * 0.9 + (i / (N - 1)) * Math.PI * 1.8 + Math.PI / 2;
-      const x = Math.cos(a) * 1.9, z = -0.9 + Math.sin(a) * 1.9;
+      const x = Math.cos(a) * 2.1, z = -0.9 + Math.sin(a) * 2.1; // (room to bow without headbutting the stretcher)
       const p = new Player({ hairStyle: (["short", "twin", "cap", "long", "spiky", "bun", "short", "mohawk"] as const)[i], accessories: i % 3 === 0 ? ["gloves"] : i === 4 ? ["headband"] : [] }, 2320 + i);
       p.at(x, z);
       p.face(0, -0.9);
@@ -86,10 +89,10 @@ const scene: SceneDef = {
       const raise = smooth(seg(t, 6, 8)) * (1 - smooth(seg(t, 15.2, 15.7)));
       const raise2 = smooth(seg(t, 32, 32.5)) * (1 - smooth(seg(t, 35, 35.4)));
       const rr = Math.max(raise, raise2);
-      elder.armR.rotation.set(-1.5 * rr, 0, 1.2 * (1 - rr));
+      elder.armR.rotation.set(-1.5 * rr, 0, -1.2 * (1 - rr)); // flopped outward when not raised
       if (rr > 0) elder.armR.rotation.x += Math.sin(t * 9) * 0.05 * rr; // trembling
       elder.head.rotation.y = rr > 0.2 ? 0.5 : 0;
-      elder.head.rotation.x = -0.2 - rr * 0.4;
+      elder.head.rotation.x = 0.3; // chin up off the pillow (tilting back would sink the head into the planks)
 
       const crack = t > 20 && t < 22;
       const vigil = t >= 22;

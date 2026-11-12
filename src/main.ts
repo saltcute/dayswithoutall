@@ -12,6 +12,8 @@ declare global {
     __HOST_SUFFIX__?: string;
     __stage?: Stage;
     __ready?: boolean;
+    /** Set by test scripts to keep the start screen up. */
+    __noAutoplay?: boolean;
   }
 }
 
@@ -68,6 +70,7 @@ const overlay = el(`
     <h1>Day <span>${day}</span>:<br>${esc(meta.title)}</h1>
     <p>${esc(meta.subtitle)}</p>
     <button class="start" autofocus>▶ ENTER THE ARCADE</button>
+    <div class="autoplay-note">Starting automatically…</div>
     <div class="fine">Sound on for maximum despair. Fan-made parody; not affiliated with SEGA.</div>
   </div></div>`);
 
@@ -104,38 +107,72 @@ const showTitle = () => {
   titlecard.classList.add("show");
   setTimeout(() => titlecard.classList.remove("show"), 3600);
 };
-controls.querySelector<HTMLButtonElement>("#replay")!.onclick = () => {
+
+// ---- Playback: autoplay after a short delay, play once, then show the start screen with "Replay" ----
+const AUTOPLAY_DELAY_MS = 2000;
+const startBtn = overlay.querySelector<HTMLButtonElement>(".start")!;
+const soundHint = el(`<button class="sound-hint" hidden>🔈 Click anywhere for sound</button>`);
+app.append(soundHint);
+let loaded = false;
+let pendingStart = false;
+let autoplayTimer: number | undefined;
+
+function unlockAudio() {
+  stage.sfx.unlock();
+  soundHint.hidden = true;
+}
+// Browsers only allow sound after a user gesture; the first one anywhere turns it on.
+for (const ev of ["pointerdown", "keydown", "touchstart"] as const)
+  addEventListener(ev, () => unlockAudio(), { once: true, capture: true });
+
+function play(withGesture: boolean) {
+  if (!loaded) {
+    pendingStart = true;
+    return;
+  }
+  clearTimeout(autoplayTimer);
+  if (withGesture) unlockAudio();
+  else if (!stage.sfx.ready) soundHint.hidden = false;
+  overlay.classList.add("hide");
   stage.restart();
+  stage.play();
   showTitle();
-};
+}
+
+function showEndScreen() {
+  stage.sfx.suspend();
+  titlecard.classList.remove("show");
+  captionEl.classList.remove("show");
+  soundHint.hidden = true;
+  overlay.classList.add("ended");
+  startBtn.textContent = "↻ REPLAY";
+  startBtn.setAttribute("aria-label", "Replay scene");
+  overlay.classList.remove("hide");
+  startBtn.focus({ preventScroll: true });
+}
+stage.onEnd = showEndScreen;
+
+startBtn.onclick = () => play(true);
+soundHint.onclick = () => unlockAudio();
+controls.querySelector<HTMLButtonElement>("#replay")!.onclick = () => play(true);
 
 addEventListener("keydown", (e) => {
   if (e.target instanceof HTMLInputElement) return;
   if (e.key === "ArrowLeft" && day > 1) location.href = urlFor(day - 1);
   else if (e.key === "ArrowRight" && day < today) location.href = urlFor(day + 1);
   else if (e.key === "m" || e.key === "M") muteBtn.click();
-  else if (e.key === "r" || e.key === "R") stage.restart();
+  else if (e.key === "r" || e.key === "R") play(true);
 });
-
-let started = false;
-function start() {
-  if (started) return;
-  started = true;
-  stage.sfx.unlock();
-  overlay.classList.add("hide");
-  setTimeout(() => overlay.remove(), 600);
-  stage.restart();
-  stage.play();
-  showTitle();
-}
-overlay.querySelector<HTMLButtonElement>(".start")!.onclick = start;
 
 loadScene(day)
   .then(async (def) => {
     await stage.load(def, day, today);
-    // Render a mid-scene still behind the start overlay.
+    // Render a mid-scene still behind the start screen.
     stage.seek(def.duration * 0.35);
+    loaded = true;
     window.__ready = true;
+    if (pendingStart) play(true);
+    else if (!window.__noAutoplay) autoplayTimer = window.setTimeout(() => play(false), AUTOPLAY_DELAY_MS);
   })
   .catch((err) => {
     console.error(err);

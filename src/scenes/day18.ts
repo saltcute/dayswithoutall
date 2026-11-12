@@ -59,7 +59,7 @@ const scene: SceneDef = {
     // a skull-ish bleached cabinet half-buried (previous pilgrims)
     const old = cabinet("slider");
     old.setScreen("off");
-    ground(old.group, 5.5, -2, -0.6);
+    ground(old.group, -6.5, -6, -0.6); // across the path, clear of the closing camera move
     old.group.rotation.set(0.4, -0.6, 0.25);
     scene.add(old.group);
     // distant mirage of a grey block on the horizon
@@ -93,7 +93,8 @@ const scene: SceneDef = {
     const shirts = [0xe63946, 0x3a86ff, 0x06d6a0, 0xffd166, 0x8e44ad, 0xfb5607, 0xff70a6, 0x2a9d8f];
     let idx = 0;
     const mk = (lat: number, extra: PlayerOpts = {}) => {
-      const p = new Player({ shirt: shirts[idx % shirts.length], accessories: ["backpack", idx % 3 === 0 ? "towel" : "gloves"], ...extra }, 1800 + walkers.length);
+      const n = Math.round(idx); // idx may be fractional (the bearers)
+      const p = new Player({ shirt: shirts[n % shirts.length], accessories: ["backpack", n % 3 === 0 ? "towel" : "gloves"], ...extra }, 1800 + walkers.length);
       scene.add(p.root);
       walkers.push({ p, idx, lat });
       return p;
@@ -101,23 +102,26 @@ const scene: SceneDef = {
     // leader with a banner
     const leader = mk(0, { accessories: ["backpack", "headband"], hairStyle: "spiky" });
     const flag = banner("ALL.NET OR BUST", "#1d3557", 0.9, 0.9);
-    flag.position.set(0.4, 0, 0.05);
     flag.scale.setScalar(0.9);
-    leader.root.add(flag);
+    leader.handL.add(flag); // the pole runs through the left fist (kept upright in update)
     idx++;
     mk(0.3); idx++;
     mk(-0.3); idx++;
-    // the cabinet bearers (two pairs)
+    // the cabinet bearers: four in single file, right underneath it
     const bearerIdx = idx + 0.5;
-    const bearers = [mk(0.55), mk(-0.55)];
-    idx++;
-    bearers.push(mk(0.55), mk(-0.55));
-    idx++;
+    const bearers: Player[] = [];
+    const BEARER_OFF = [-0.84, -0.28, 0.28, 0.84]; // in caravan slots (×GAP): ~0.73 m apart, all under the cabinet
+    for (const off of BEARER_OFF) {
+      idx = bearerIdx + off;
+      bearers.push(mk(0));
+    }
+    idx = Math.round(bearerIdx + 1.5);
     for (let i = 0; i < 6; i++) {
       mk(i % 2 ? 0.35 : -0.35);
       idx++;
     }
     const litter = new THREE.Group();
+    litter.rotation.order = "YXZ"; // yaw along the path, then pitch with the dunes
     const cab = cabinet("round");
     cab.setScreen("error");
     cab.group.rotation.x = -Math.PI / 2;
@@ -156,32 +160,51 @@ const scene: SceneDef = {
           p.pose(wi === 0 ? "point" : "idle", t);
           p.head.rotation.x = -0.25;
         } else if (t < 35.6) {
-          // follow the arrow, confused
-          p.root.rotation.y = dirX > 0 ? Math.PI / 2 : -Math.PI / 2;
-          p.pose(wi % 3 === 0 ? "facepalm" : wi % 3 === 1 ? "point" : "idle", t);
-        } else p.pose("sitFloor", t);
-      });
-      // bearers hold the cabinet overhead
-      bearers.forEach((p) => {
-        if (t < 35.6) {
-          p.armL.rotation.set(-2.95, 0, -0.1);
-          p.armR.rotation.set(-2.95, 0, 0.1);
+          // follow the arrow, confused (the bearers can only turn their heads)
+          if (!bearers.includes(p)) p.root.rotation.y = dirX > 0 ? Math.PI / 2 : -Math.PI / 2;
+          const n = Math.round(wi);
+          p.pose(n % 3 === 0 ? "facepalm" : n % 3 === 1 ? "point" : "idle", t);
+        } else {
+          // sit facing sideways (toward the camera) so nobody's legs go into the person ahead
+          p.root.rotation.y = Math.PI / 2;
+          p.pose("sitFloor", t);
+          p.armL.rotation.z = -0.12; // hug the knees (keeps elbows off the neighbours)
+          p.armR.rotation.z = 0.12;
         }
       });
+      // bearers hold the cabinet overhead, both fists under it
+      bearers.forEach((p) => {
+        if (t < 35.6) {
+          p.armL.rotation.set(-3.0, 0, -0.08);
+          p.armR.rotation.set(-3.0, 0, 0.08);
+          if (t > 30.4) p.head.rotation.y = -dirX * 1.1; // the caravan heads along -Z, so +x is to their right
+        }
+      });
+      // leader: pole held upright in the left fist, hand a little forward
+      if (t < 35.6) leader.armL.rotation.set(-0.45, 0, 0);
+      const la = leader.armL.rotation.x;
+      flag.rotation.set(-la, Math.sin(t * 2) * 0.2, 0);
+      flag.position.set(0, -0.62 * Math.cos(la), 0.62 * Math.sin(la));
       const cs = lead - bearerIdx * GAP;
       const c = along(cs);
       const sitting = t > 35.6;
-      litter.position.set(c.x, dune(c.x, c.z) + (sitting ? 0.55 : 2.05) + (moving ? Math.abs(Math.sin(t * 6.3)) * 0.04 : 0), c.z);
+      // pitch the cabinet to follow the ground under the front and rear bearers
+      const f = along(cs + BEARER_OFF[3] * GAP), b = along(cs + BEARER_OFF[0] * GAP);
+      const hF = dune(f.x, f.z), hB = dune(b.x, b.z);
+      // carried: underside (0.475 below the litter origin) resting on the raised fists (gloves top out at ~2.06);
+      // set down: on the sand just behind the seated bearers
+      const lx = sitting ? c.x - 1.0 : c.x;
+      litter.position.set(lx, sitting ? dune(lx, c.z) + 0.5 : (hF + hB) / 2 + 2.54 + (moving ? Math.abs(Math.sin(t * 0.9 * 7.5)) * 0.05 : 0), c.z);
       litter.rotation.y = heading(c.z) + Math.PI;
+      litter.rotation.x = sitting ? 0 : Math.atan2(hF - hB, Math.hypot(f.x - b.x, f.z - b.z));
       litter.rotation.z = moving ? Math.sin(t * 3.1) * 0.03 : 0;
       cab.setScreen("error");
 
       // tumbleweed rolls across
       const tk = seg(t, 18, 27);
-      const twx = lerp(-14, 14, tk), twz = -2 - tk * 3;
+      const twx = lerp(-14, 14, tk), twz = -7.5 - tk * 3; // crosses the path ahead of the leader
       tw.position.set(twx, dune(twx, twz) + 0.4 + Math.abs(Math.sin(t * 4)) * 0.3, twz);
       tw.rotation.z = -t * 3;
-      flag.rotation.y = Math.sin(t * 2) * 0.2;
     });
 
     // --- Sound ---

@@ -30,7 +30,7 @@ scripts/screenshots.mjs  Playwright: headless render of scenes into ./shots for 
 - The apex domain, `www.`, unknown labels and future days get a **302** to today's subdomain (`no-store`).
 - Non-canonical spellings (`twenty-one`) get a **301** to the canonical label (`twentyone`).
 - A valid past or current day is served `index.html` with `window.__DAY__`, `__TODAY__`, `__HOST_SUFFIX__` and per-day meta tags injected.
-- `*.localhost` works the same way locally (`http://seven.localhost:8787/`). `DEV_NOW` in `.dev.vars` overrides the clock.
+- `*.localhost` works the same way locally (`http://seven.localhost:8799/`) via `wrangler dev --env local` (the `local` env has no routes; with routes, wrangler rewrites the Host header). `DEV_NOW` in `.dev.vars` or `--var DEV_NOW:<iso>` overrides the clock.
 - With the plain Vite dev server (no Worker), use `?day=N&today=M`.
 
 ## Writing a scene
@@ -69,7 +69,7 @@ Rules:
 npm run dev            # Vite dev server at :5173 (use ?day=N&today=M)
 npm test               # vitest (shared logic)
 npm run build          # typecheck (app + worker) and build to dist/
-npm run preview        # build + wrangler dev at :8787 (try http://one.localhost:8787/)
+npm run preview        # build + `wrangler dev --env local` at :8799 (try http://one.localhost:8799/)
 npm run shots -- 1-5   # with dev server running: render scenes into ./shots/*.png
 npm run deploy         # build + wrangler deploy (needs `wrangler login`)
 ```

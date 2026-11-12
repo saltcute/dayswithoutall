@@ -72,7 +72,8 @@ const scene: SceneDef = {
       scene.add(p.root);
       return p;
     });
-    const hPos: [number, number][] = [[-4.4, 1.0], [-3.7, 1.7], [-4.6, 3.6], [-3.6, 2.6]];
+    // all on the open side of the car, clear of its body
+    const hPos: [number, number][] = [[-3.9, 0.8], [-3.7, 1.7], [-3.2, 3.5], [-3.6, 2.6]];
 
     // Aliens: tiny green players with huge eyes and antennae
     const NA = 5;
@@ -125,11 +126,12 @@ const scene: SceneDef = {
       // aliens float down the beam, then kneel in a circle
       aliens.forEach((a, i) => {
         const ang = (i / NA) * Math.PI * 2 + 0.3;
-        const tx = CX + Math.cos(ang) * 1.9, tz = CZ + Math.sin(ang) * 1.9;
         const d = smooth(seg(t, 17 + i * 0.4, 19.5 + i * 0.4));
         const ascend = easeIn(seg(t, 34 + i * 0.15, 36.5 + i * 0.15));
         const k = Math.min(d, 1 - ascend);
-        a.root.position.set(lerp(CX + (i - 2) * 0.25, tx, smooth(seg(t, 19 + i * 0.4, 21 + i * 0.4)) * (1 - ascend)), lerp(5.5, 0, d) + ascend * 6, lerp(CZ, tz, smooth(seg(t, 19 + i * 0.4, 21 + i * 0.4)) * (1 - ascend)));
+        // ride the beam down around (not through) the hovering cabinet, then step out to the circle
+        const rad = lerp(1.25, 1.9, smooth(seg(t, 19 + i * 0.4, 21 + i * 0.4)) * (1 - ascend));
+        a.root.position.set(CX + Math.cos(ang) * rad, lerp(5.5, 0, d) + ascend * 6, CZ + Math.sin(ang) * rad);
         a.root.visible = t > 17 + i * 0.4 && ascend < 1;
         a.face(CX, CZ);
         if (k < 1 || t < 21.5) {

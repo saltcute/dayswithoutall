@@ -365,8 +365,8 @@ export class Player {
       }
       case "cheer": {
         const j = Math.abs(s(tt * 6));
-        armL.rotation.set(-2.8 + s(tt * 12) * 0.2, 0, -0.35);
-        armR.rotation.set(-2.8 - s(tt * 12) * 0.2, 0, 0.35);
+        armL.rotation.set(-2.8 + s(tt * 12) * 0.2, 0, 0.3); // arms up in a V, clear of the head
+        armR.rotation.set(-2.8 - s(tt * 12) * 0.2, 0, -0.3);
         body.position.y = j * 0.25 * k;
         head.rotation.x = -0.3;
         break;

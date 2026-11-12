@@ -26,7 +26,7 @@ scripts/screenshots.mjs  Playwright: headless render of scenes into ./shots for 
 ```
 
 ### Routing rules (worker/index.ts)
-- `OUTAGE_START` (wrangler var, default `2026-11-12T00:00:00+09:00`) is the start of Day 1. The day count changes at 00:00 JST.
+- `OUTAGE_START` (wrangler var, default `2026-11-04T00:00:00+09:00`) is the start of Day 1. The day count changes at 00:00 JST.
 - The apex domain, `www.`, unknown labels and future days get a **302** to today's subdomain (`no-store`).
 - Non-canonical spellings (`twenty-one`) get a **301** to the canonical label (`twentyone`).
 - A valid past or current day is served `index.html` with `window.__DAY__`, `__TODAY__`, `__HOST_SUFFIX__` and per-day meta tags injected.

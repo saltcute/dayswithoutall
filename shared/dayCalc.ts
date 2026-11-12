@@ -1,6 +1,6 @@
 // Day arithmetic. Days roll over at midnight Japan Standard Time (UTC+9, no DST).
 
-export const DEFAULT_OUTAGE_START = "2026-11-12T00:00:00+09:00";
+export const DEFAULT_OUTAGE_START = "2026-11-04T00:00:00+09:00";
 const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 

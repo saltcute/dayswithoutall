@@ -5,6 +5,7 @@
 //   node scripts/tweet.mjs --dry-run            # today's day (JST), print only
 //   node scripts/tweet.mjs --dry-run --all      # check every entry's length
 //   node scripts/tweet.mjs --day 10             # post a specific day for real
+//   node scripts/tweet.mjs --whoami             # check credentials, post nothing
 //
 // Needs Node >= 22.18 (imports the shared .ts helpers via type stripping) and
 // these env vars (OAuth 1.0a user context, app permission "Read and write"):
@@ -122,6 +123,13 @@ async function xRequest(method, url, { query = {}, json } = {}) {
 }
 
 // ---------- main ----------
+if (flag("--whoami")) {
+  // Credential check only: shows which account the tokens post as.
+  const me = await xRequest("GET", "https://api.x.com/2/users/me");
+  console.log(`Authenticated as @${me.data.username} (${me.data.name})`);
+  process.exit(0);
+}
+
 if (flag("--all")) {
   const days = Object.keys(tweets).filter((k) => /^\d+$/.test(k)).map(Number);
   const bad = days.filter((d) => !check(d, postsFor(d)));

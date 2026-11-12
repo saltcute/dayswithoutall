@@ -64,7 +64,8 @@ const scene: SceneDef = {
       [-0.32, 1.55, 0.62, 0.5, 0.65, -0.07], [0.32, 1.55, 0.62, 0.5, 0.65, -0.07],
       [0, 2.05, 1.3, 0.38, 0.55, -0.12],
     ];
-    const pile = new THREE.Vector3(3.6, 0, 0.6);
+    // each box leaves from above e0's head, where he holds it up to toss it
+    const TOSS = new THREE.Vector3(2.16, 1.95, -0.05);
     const pieces: Piece[] = spec.map(([x, y, w, h, d, zo], i) => {
       const g = cardboardBox(w, h, d);
       scene.add(g);
@@ -72,7 +73,7 @@ const scene: SceneDef = {
       return {
         g, x: CX + x, y, z: CZ + zo, w, h, d,
         land: 3 + i * 1.25,
-        from: new THREE.Vector3(pile.x + r.range(-0.3, 0.3), 0.9, pile.z + r.range(-0.3, 0.3)),
+        from: (r.range(-0.3, 0.3), r.range(-0.3, 0.3), TOSS.clone()), // (rng calls kept so the layout doesn't change)
         fall: new THREE.Vector3(CX + x * 2.5 + r.range(-0.8, 0.8), 0, CZ + 0.3 + r.range(0, 1.0) - (y > 1 ? 0 : 0.5)),
         fallRot: new THREE.Euler(r.range(-0.6, 0.6), r.range(-1.2, 1.2), side * Math.PI / 2 * (y > 0.4 ? 1 : 0.15)),
         fallAt: 25.6 + (2.4 - y) * 0.12 + r.range(0, 0.15),
@@ -155,7 +156,7 @@ const scene: SceneDef = {
     [...eng, tester].forEach((p) => scene.add(p.root));
     const carried = box(0.62, 0.5, 0.7, 0xc19a6b);
     eng[0].handR.add(carried);
-    carried.position.set(0.31, -0.05, 0.3);
+    const X_AXIS = new THREE.Vector3(1, 0, 0);
 
     sfx.ambient("hum", 0.5);
 
@@ -205,14 +206,20 @@ const scene: SceneDef = {
         e0.pose("hold", t);
         e0.armR.rotation.x = -1.1 - ph * 1.5;
         e0.armL.rotation.x = -1.1 - ph * 1.5;
+        e0.armL.rotation.z = e0.armR.rotation.z = 0;
+        // the box stays level between both hands (gripped by its sides), a little forward
+        const ax = e0.armR.rotation.x;
+        carried.rotation.x = -ax;
+        carried.position.set(0.31, 0, 0.25).applyAxisAngle(X_AXIS, -ax);
         carried.visible = !!toss && ph < 1;
       } else if (t < 25.5) {
         carried.visible = false;
-        e0.root.position.set(2.2 + seg(t, 19, 20) * 0.6, 0, 0.6 + seg(t, 19, 20) * 0.8);
+        // steps back to admire (out of the tester's path)
+        e0.root.position.set(2.2 + seg(t, 19, 20) * 0.7, 0, 0.6 - seg(t, 19, 20) * 0.2);
         e0.face(CX, CZ);
         e0.pose(t > 19.5 && t < 23 ? "cheer" : "idle", t);
       } else {
-        e0.root.position.set(2.8, 0, 1.4);
+        e0.root.position.set(2.9, 0, 0.4);
         e0.face(CX, CZ);
         e0.pose(t < 27 ? "stop" : "facepalm", t);
       }
@@ -249,9 +256,9 @@ const scene: SceneDef = {
           tester.armR.rotation.x = -1.4 - bumpTap(t) * 0.25;
         } else if (t < 27) {
           tester.pose("stop", t);
-          tester.root.position.z += seg(t, 25.6, 26) * 0.4;
+          tester.root.position.z += seg(t, 25.6, 26.2) * 1.0; // stumbles clear of the falling boxes
         } else {
-          tester.root.position.z += 0.4;
+          tester.root.position.z += 1.0;
           tester.pose("sitFloor", t);
           tester.head.rotation.x = 0.5;
         }

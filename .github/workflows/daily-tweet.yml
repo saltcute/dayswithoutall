@@ -2,8 +2,8 @@ name: daily-tweet
 
 on:
   schedule:
-    # 15:02 UTC = 00:02 JST, just after the day rolls over. GitHub may start it late.
-    - cron: "2 15 * * *"
+    # 03:00 UTC = 12:00 JST. GitHub may start it late, but it stays on the same JST day.
+    - cron: "0 3 * * *"
   workflow_dispatch:
     inputs:
       day:

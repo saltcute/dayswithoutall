@@ -34,7 +34,7 @@ See [AGENTS.md](AGENTS.md) for architecture, conventions and how to add a new da
 
 | var | default | meaning |
 | --- | --- | --- |
-| `OUTAGE_START` | `2026-11-04T00:00:00+09:00` | Start of Day 1. Days roll over at 00:00 JST. |
+| `OUTAGE_START` | `2026-11-03T00:00:00+09:00` | Start of Day 1. Days roll over at 00:00 JST. |
 | `BASE_DOMAIN` | `dayswithoutall.net` | Apex domain; subdomains are day numbers in words. |
 
 ## Deploying to Cloudflare

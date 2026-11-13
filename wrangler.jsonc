@@ -10,7 +10,7 @@
   },
   "vars": {
     // Day 1 begins at this instant. Days roll over at JST midnight.
-    "OUTAGE_START": "2026-11-04T00:00:00+09:00",
+    "OUTAGE_START": "2026-11-03T00:00:00+09:00",
     "BASE_DOMAIN": "dayswithoutall.net"
   },
   "routes": [
@@ -24,7 +24,7 @@
     "local": {
       "routes": [],
       "vars": {
-        "OUTAGE_START": "2026-11-04T00:00:00+09:00",
+        "OUTAGE_START": "2026-11-03T00:00:00+09:00",
         "BASE_DOMAIN": "dayswithoutall.net"
       }
     }

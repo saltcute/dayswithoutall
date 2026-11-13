@@ -46,7 +46,7 @@ See [AGENTS.md](AGENTS.md) for architecture, conventions and how to add a new da
 
    Wildcard proxied records are supported on all plans. Universal SSL covers `*.dayswithoutall.net` at the first level, which is all this site uses.
 3. Set `OUTAGE_START` in `wrangler.jsonc` to the real start of the outage.
-4. Deploy:
+4. Deploy. In production, pushing to `master` deploys automatically through the Cloudflare Git integration. To deploy by hand:
    ```bash
    npx wrangler login
    npm run deploy

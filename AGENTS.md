@@ -97,8 +97,14 @@ npm run shots -- 1-5   # with `vite preview --port 4173` running: render scenes 
 npm run i18n:extract   # with `vite preview` running: rebuild src/i18n/catalog.json from all scenes
 npm run og -- 10       # with `vite preview` running: render public/og/day10.jpg (no args = all + generic)
 node scripts/audit.mjs 1-5  # with `vite preview` running: report clipping and misplaced held props
-npm run deploy         # build + wrangler deploy (needs `wrangler login`)
+npm run deploy         # manual build + wrangler deploy (needs `wrangler login`); normally not needed, see Deployment
 ```
+
+## Deployment
+- **Pushing to `master` deploys the live site automatically.** The Cloudflare Git integration builds and deploys the Worker; it isn't configured in `.github/workflows`. There is no staging step, so every push to `master` is a production release.
+- Before pushing, finish the verification steps below, and check anything time-sensitive, such as `OUTAGE_START` and whether today's scene and `social/tweets.json` entry are ready.
+- After pushing, run `curl -sI https://dayswithoutall.net/` to check the deploy. It should 302 to today's subdomain.
+- `npm run deploy` is only a manual fallback.
 
 ## Verification before committing
 1. `npm test` and `npm run build` pass.

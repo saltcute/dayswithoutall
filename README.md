@@ -36,22 +36,3 @@ See [AGENTS.md](AGENTS.md) for architecture, conventions and how to add a new da
 | --- | --- | --- |
 | `OUTAGE_START` | `2026-11-03T00:00:00+09:00` | Start of Day 1. Days roll over at 00:00 JST. |
 | `BASE_DOMAIN` | `dayswithoutall.net` | Apex domain; subdomains are day numbers in words. |
-
-## Deploying to Cloudflare
-
-1. Add `dayswithoutall.net` as a zone in your Cloudflare account and point the registrar's nameservers at Cloudflare.
-2. In **DNS**, create two **proxied** (orange-cloud) records so requests reach the Worker:
-   - `AAAA  @  100::`
-   - `AAAA  *  100::`
-
-   Wildcard proxied records are supported on all plans. Universal SSL covers `*.dayswithoutall.net` at the first level, which is all this site uses.
-3. Set `OUTAGE_START` in `wrangler.jsonc` to the real start of the outage.
-4. Deploy. In production, pushing to `master` deploys automatically through the Cloudflare Git integration. To deploy by hand:
-   ```bash
-   npx wrangler login
-   npm run deploy
-   ```
-   The Worker attaches to the routes `dayswithoutall.net/*` and `*.dayswithoutall.net/*` (declared in `wrangler.jsonc`).
-5. Visit `https://dayswithoutall.net/`. It should redirect to today's subdomain.
-
-When the server comes back: congratulations, and set the Worker to show a celebration (or just leave it up as a memorial).
